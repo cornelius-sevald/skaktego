@@ -5,15 +5,19 @@ using SDL2;
 
 namespace skaktego {
     class Program {
+        // Screen size
         const int SCREEN_WIDTH = 640;
         const int SCREEN_HEIGHT = 480;
-        // Size of background tiles.
+        // Size of background tiles
         const int TILE_SIZE = 160;
+        // Path of game resources
         const string RESOURCE_PATH = "resources/";
 
         static TextWriter stdout = Console.Out;
 
         static int Main(string[] args) {
+            DateTime start = DateTime.Now;
+
             // Initialize SDL
             if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) != 0) {
                 LogSDLError(stdout, "SDL_Init");
@@ -52,15 +56,21 @@ namespace skaktego {
                 return 1;
             }
 
-            // Load two images
+            // Load three images
             IntPtr background = LoadTexture("background.png", renderer);
             IntPtr image = LoadTexture("image.png", renderer);
-            if (background == IntPtr.Zero || image == IntPtr.Zero) {
+            IntPtr pieceSprites = LoadTexture("pieces.png", renderer);
+            if (background == IntPtr.Zero ||
+                image == IntPtr.Zero ||
+                pieceSprites == IntPtr.Zero) {
                 if (background != IntPtr.Zero) {
-                    SDL.SDL_FreeSurface(background);
+                    SDL.SDL_DestroyTexture(background);
                 }
                 if (image != IntPtr.Zero) {
                     SDL.SDL_DestroyTexture(image);
+                }
+                if (pieceSprites != IntPtr.Zero) {
+                    SDL.SDL_DestroyTexture(pieceSprites);
                 }
                 if (renderer != IntPtr.Zero) {
                     SDL.SDL_DestroyRenderer(renderer);
@@ -73,8 +83,12 @@ namespace skaktego {
                 return 1;
             }
 
+            // Get the clips of the piece sprites.
+            SDL.SDL_Rect[,] pieceClips = GetPieceClips(pieceSprites);
+
             // The image offset
             int xOffset = 0, yOffset = 0;
+            PieceColors currentColor = PieceColors.White;
 
             // The main loop
             SDL.SDL_Event e;
@@ -90,6 +104,7 @@ namespace skaktego {
                         case SDL.SDL_EventType.SDL_KEYDOWN:
                             switch (e.key.keysym.sym) {
                                 // Check if user pressed 'q'
+                                case SDL.SDL_Keycode.SDLK_ESCAPE:
                                 case SDL.SDL_Keycode.SDLK_q:
                                     quit = true;
                                     break;
@@ -111,6 +126,9 @@ namespace skaktego {
                                 case SDL.SDL_Keycode.SDLK_d:
                                     xOffset += 10;
                                     break;
+                                case SDL.SDL_Keycode.SDLK_SPACE:
+                                    currentColor = currentColor == PieceColors.White ? PieceColors.Black : PieceColors.White;
+                                    break;
                             }
                             break;
                     }
@@ -119,25 +137,42 @@ namespace skaktego {
 
                 SDL.SDL_RenderClear(renderer);
 
-                // Determine how many tiles we'll need to fill the screen
-                int xTiles = SCREEN_WIDTH / TILE_SIZE;
-                int yTiles = SCREEN_HEIGHT / TILE_SIZE;
+                {
+                    // Determine how many tiles we'll need to fill the screen
+                    int xTiles = SCREEN_WIDTH / TILE_SIZE;
+                    int yTiles = SCREEN_HEIGHT / TILE_SIZE;
 
-                // Draw the tiles by calculating their positions
-                for (int i = 0; i < xTiles * yTiles; ++i){
-                    int xT = i % xTiles;
-                    int yT = i / xTiles;
-                    RenderTexture(background, renderer,
-                            xT * TILE_SIZE, yT * TILE_SIZE, TILE_SIZE,
-                            TILE_SIZE);
+                    // Draw the tiles by calculating their positions
+                    for (int i = 0; i < xTiles * yTiles; ++i) {
+                        int xT = i % xTiles;
+                        int yT = i / xTiles;
+                        RenderTexture(background, renderer,
+                                xT * TILE_SIZE, yT * TILE_SIZE, TILE_SIZE,
+                                TILE_SIZE);
+                    }
+                }
+
+                // Draw a moving chess piece.
+                {
+                    DateTime now = DateTime.Now;
+                    SDL.SDL_Rect pieceDst;
+                    pieceDst.x = ((int)(now.Subtract(start).TotalMilliseconds * 0.3) % (SCREEN_WIDTH + 100)) - 100;
+                    pieceDst.y = (int)(now.Subtract(start).TotalMilliseconds * 0.25) % (SCREEN_HEIGHT + 100) - 100;
+                    pieceDst.w = 200;
+                    pieceDst.h = 200;
+                    int t = ((int)now.Second / 2) % Piece.PIECE_TYPE_COUNT;
+                    int c = (int) currentColor;
+                    RenderTexture(pieceSprites, renderer, ref pieceDst, ref pieceClips[t, c]);
                 }
 
                 // Draw the foreground image
-                int iW, iH;
-                SDL.SDL_QueryTexture(image, out _, out _, out iW, out iH);
-                int x = SCREEN_WIDTH / 2 - iW / 2 + xOffset;
-                int y = SCREEN_HEIGHT / 2 - iH / 2 + yOffset;
-                RenderTexture(image, renderer, x, y);
+                {
+                    int iW, iH;
+                    SDL.SDL_QueryTexture(image, out _, out _, out iW, out iH);
+                    int x = SCREEN_WIDTH / 2 - iW / 2 + xOffset;
+                    int y = SCREEN_HEIGHT / 2 - iH / 2 + yOffset;
+                    RenderTexture(image, renderer, x, y);
+                }
 
                 SDL.SDL_RenderPresent(renderer);
             }
@@ -150,6 +185,27 @@ namespace skaktego {
             SDL_image.IMG_Quit();
             SDL.SDL_Quit();
             return 0;
+        }
+
+        static SDL.SDL_Rect[,] GetPieceClips(IntPtr tex) {
+            int tW, tH;
+            SDL.SDL_QueryTexture(tex, out _, out _, out tW, out tH);
+            SDL.SDL_Rect[,] clips = new SDL.SDL_Rect[Piece.PIECE_TYPE_COUNT, Piece.PIECE_COLOR_COUNT];
+
+            int w = tW / Piece.PIECE_TYPE_COUNT;
+            int h = tH / Piece.PIECE_COLOR_COUNT;
+            for (int y = 0; y < Piece.PIECE_COLOR_COUNT; y++) {
+                for (int x = 0; x < Piece.PIECE_TYPE_COUNT; x++) {
+                    SDL.SDL_Rect clip;
+                    clip.x = x * w;
+                    clip.y = y * w;
+                    clip.w = w;
+                    clip.h = h;
+                    clips[x, y] = clip;
+                }
+            }
+
+            return clips;
         }
 
         /// <summary>
@@ -177,6 +233,20 @@ namespace skaktego {
                 LogSDLError(stdout, "LoadTexture");
             }
             return texture;
+        }
+
+        /// <summary>
+        /// Draw an SDL_Texture to an SDL_Renderer at some destination rect
+        /// taking a clip of the texture if desired
+        /// </summary>
+        /// <param name="tex">The source texture we want to draw</param>
+        /// <param name="ren">The renderer we want to draw to</param>
+        /// <param name="dst">The destination rectangle to render the texture to</param>
+        /// <param name="clip">The sub-section of the texture to draw (clipping rect)
+        /// default of nullptr draws the entire texture</param>
+        static void RenderTexture(IntPtr tex, IntPtr ren, ref SDL.SDL_Rect dst,
+                ref SDL.SDL_Rect clip) {
+            SDL.SDL_RenderCopy(ren, tex, ref clip, ref dst);
         }
 
         /// <summary>
