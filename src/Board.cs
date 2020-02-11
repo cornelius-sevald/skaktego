@@ -8,23 +8,6 @@ namespace skaktego {
 
         private Piece[,] board;
 
-        public static Tuple<int, int> StringToPosition(string pos) {
-            // TODO: Throw error if px > 'i' or py > 9
-            char px = pos[0];
-            char py = pos[1];
-            int i = (int)(px - 'a');
-            int j = (int)(py - '1');
-            return new Tuple<int, int>(i, j);
-        }
-
-        public static string PositionToString(int i, int j) {
-            // TODO: Throw error if px > 'i' or py > 9
-            char px = (char)('a' + i);
-            char py = (char)('1' + j);
-            char[] charArr = { px, py };
-            return new string(charArr);
-        }
-
         public static Board FromString(int size, string s) {
             int index = 0;
             var board = new Board(size);
@@ -38,8 +21,9 @@ namespace skaktego {
                         i -= (int)Char.GetNumericValue(c) - 1;
                     } else {
                         // Otherwise, place a piece.
+                        var pos = new BoardPosition(i, j);
                         var piece = Piece.FromChar(c);
-                        board.SetPiece(piece, i, j);
+                        board.SetPiece(piece, pos);
                     }
                 }
                 // Skip the '/' character.
@@ -66,26 +50,22 @@ namespace skaktego {
             Array.Copy(pieces, board, pieces.Length);
         }
 
-        public Piece GetPiece(int i, int j) {
-            return board[i, j];
+        public Piece GetPiece(BoardPosition pos) {
+            return board[pos.Column, pos.Row];
         }
 
         public Piece GetPiece(string strPos) {
-            var pos = StringToPosition(strPos);
-            int i = pos.Item1;
-            int j = pos.Item2;
-            return GetPiece(i, j);
+            var pos = BoardPosition.FromString(strPos);
+            return GetPiece(pos);
         }
 
-        public void SetPiece(Piece piece, int i, int j) {
-            board[i, j] = piece;
+        public void SetPiece(Piece piece, BoardPosition pos) {
+            board[pos.Column, pos.Row] = piece;
         }
 
         public void SetPiece(Piece piece, string strPos) {
-            var pos = StringToPosition(strPos);
-            int i = pos.Item1;
-            int j = pos.Item2;
-            SetPiece(piece, i, j);
+            var pos = BoardPosition.FromString(strPos);
+            SetPiece(piece, pos);
         }
 
         public override string ToString() {
@@ -103,7 +83,8 @@ namespace skaktego {
 
                 // Start from the right (from white's perspective).
                 for (int i = Size - 1; i >= 0; i--) {
-                    var piece = GetPiece(i, j);
+                    var pos = new BoardPosition(i, j);
+                    var piece = GetPiece(pos);
                     if (piece == null) {
                         emptyCells++;
                     } else {
