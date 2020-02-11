@@ -2,10 +2,6 @@ using System;
 
 namespace skaktego {
 
-    public enum PieceColors {
-        White, Black
-    }
-
     public enum PieceTypes {
         King, Queen, Bishop,
         Knight, Rook, Pawn
@@ -15,7 +11,7 @@ namespace skaktego {
         public const int PIECE_COLOR_COUNT = 2;
         public const int PIECE_TYPE_COUNT = 6;
 
-        public PieceColors Color { get; private set; }
+        public ChessColors Color { get; private set; }
         public PieceTypes Type { get; private set; }
         //public int Index { get => (int)Type + (int)Color * PIECE_TYPE_COUNT; }
 
@@ -24,10 +20,10 @@ namespace skaktego {
         /// </summary>
         /// <param name="c">The character representing the piece.</param>
         public static Piece FromChar(char c) {
-            PieceColors color;
+            ChessColors color;
             PieceTypes type;
 
-            color = Char.IsLower(c) ? PieceColors.Black : PieceColors.White;
+            color = Char.IsLower(c) ? ChessColors.Black : ChessColors.White;
 
             switch (Char.ToLower(c)) {
                 case 'k':
@@ -63,7 +59,7 @@ namespace skaktego {
         /// </summary>
         /// <param name="color">The color the piece belongs to.</param>
         /// <param name="type">The type of the piece.</param>
-        public Piece(PieceColors color, PieceTypes type) {
+        public Piece(ChessColors color, PieceTypes type) {
             Color = color;
             Type = type;
         }
@@ -94,7 +90,7 @@ namespace skaktego {
 
             // TODO: Throw exception if c == '\0'.
 
-            if (Color == PieceColors.White) {
+            if (Color == ChessColors.White) {
                 c = Char.ToUpper(c);
             }
 
