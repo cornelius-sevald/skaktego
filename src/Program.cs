@@ -88,7 +88,7 @@ namespace skaktego {
 
             // The image offset
             int xOffset = 0, yOffset = 0;
-            PieceColors currentColor = PieceColors.White;
+            ChessColors currentColor = ChessColors.White;
 
             // The main loop
             SDL.SDL_Event e;
@@ -127,7 +127,7 @@ namespace skaktego {
                                     xOffset += 10;
                                     break;
                                 case SDL.SDL_Keycode.SDLK_SPACE:
-                                    currentColor = currentColor == PieceColors.White ? PieceColors.Black : PieceColors.White;
+                                    currentColor = currentColor == ChessColors.White ? ChessColors.Black : ChessColors.White;
                                     break;
                             }
                             break;
