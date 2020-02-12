@@ -10,14 +10,16 @@ namespace skaktego {
         private Piece[,] board;
 
         public static Board FromString(string s) {
-            int index = 0;
-            int size = s.Count(c => c == '/') + 1;
+            string[] rows = s.Split('/');
+            int size = rows.Length;
             var board = new Board(size);
             // Start from the top (from white's perspecitve).
             for (int j = size - 1; j >= 0; j--) {
+                string row = rows[size - j - 1];
+                int index = 0;
                 // Start from the right (from white's perspective).
                 for (int i = size - 1; i >= 0; i--) {
-                    char c = s[index++];
+                    char c = row[index++];
                     if (Char.IsDigit(c)) {
                         // Skip ahead if there are empty cells.
                         i -= (int)Char.GetNumericValue(c) - 1;
@@ -71,12 +73,9 @@ namespace skaktego {
         }
 
         public override string ToString() {
-            // More than enough for an 8 x 8 board.
-            const int boardStrCapacity = 64;
-            const int rankStrCapacity = 8;
-            StringBuilder boardStr = new StringBuilder(boardStrCapacity);
-            StringBuilder rankStr = new StringBuilder(rankStrCapacity);
+            StringBuilder rowStr = new StringBuilder(Size);
 
+            string[] rowStrings = new string[Size];
             // Start from the top (from white's perspecitve).
             for (int j = Size - 1; j >= 0; j--) {
                 // Build a string for this rank.
@@ -91,23 +90,20 @@ namespace skaktego {
                         emptyCells++;
                     } else {
                         if (emptyCells != 0) {
-                            rankStr.Append(emptyCells);
+                            rowStr.Append(emptyCells);
                             emptyCells = 0;
                         }
                         var pieceChar = piece.ToChar();
-                        rankStr.Append(pieceChar);
+                        rowStr.Append(pieceChar);
                     }
                 }
                 if (emptyCells != 0) {
-                    rankStr.Append(emptyCells);
+                    rowStr.Append(emptyCells);
                 }
-                if (j != 0) {
-                    rankStr.Append('/');
-                }
-                boardStr.Append(rankStr);
-                rankStr.Clear();
+                rowStrings[Size - j - 1] = rowStr.ToString();
+                rowStr.Clear();
             }
-            return boardStr.ToString();
+            return string.Join('/', rowStrings);
         }
     }
 
