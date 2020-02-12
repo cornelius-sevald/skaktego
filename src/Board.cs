@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text;
 
 namespace skaktego {
@@ -8,8 +9,9 @@ namespace skaktego {
 
         private Piece[,] board;
 
-        public static Board FromString(int size, string s) {
+        public static Board FromString(string s) {
             int index = 0;
+            int size = s.Count(c => c == '/') + 1;
             var board = new Board(size);
             // Start from the top (from white's perspecitve).
             for (int j = size - 1; j >= 0; j--) {
