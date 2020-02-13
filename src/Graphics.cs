@@ -26,9 +26,9 @@ namespace skaktego {
     public class Window {
         public IntPtr WinPtr { get; private set; }
 
-        public Window(string title, int xPos, int yPos, int width, int height) {
+        public Window(string title, int x, int y, int w, int h) {
             // Create window
-            IntPtr window = SDL.SDL_CreateWindow(title, xPos, yPos, width, height,
+            IntPtr window = SDL.SDL_CreateWindow(title, x, y, w, h,
                     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
                     SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             if (window == IntPtr.Zero) {
@@ -159,32 +159,23 @@ namespace skaktego {
     }
 
     public class Rect {
-        public SDL.SDL_Rect Rct { get; private set; }
-        public int XPos {
-            get { return Rct.x; }
-            set { Rct = new SDL.SDL_Rect { x = value, y = YPos, w = Width, h = Height }; }
+
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int W { get; set; }
+        public int H { get; set; }
+
+        public Rect(int x, int y, int w, int h) {
+            X = x;
+            Y = y;
+            W = w;
+            H = h;
         }
 
-        public int YPos {
-            get { return Rct.y; }
-            set { Rct = new SDL.SDL_Rect { x = XPos, y = value, w = Width, h = Height }; }
-        }
-
-        public int Width {
-            get { return Rct.w; }
-            set { Rct = new SDL.SDL_Rect { x = XPos, y = YPos, w = value, h = Height }; }
-        }
-
-        public int Height {
-            get { return Rct.h; }
-            set { Rct = new SDL.SDL_Rect { x = XPos, y = YPos, w = Width, h = value }; }
-        }
-
-        public Rect(int xPos, int yPos, int width, int height) {
-            XPos   = xPos;
-            YPos   = yPos;
-            Width  = width;
-            Height = height;
+        public SDL.SDL_Rect Rct {
+            get {
+                return new SDL.SDL_Rect { x=X, y=Y, w=W, h=H };
+            }
         }
     }
     
