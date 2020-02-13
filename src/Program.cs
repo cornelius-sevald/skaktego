@@ -2,13 +2,21 @@
 using System.IO;
 using System.Text;
 
-namespace skaktego {
-    class Program {
+namespace skaktego
+{
+    class Program
+    {
 
-        static int Main(string[] args) {
+        static int Main(string[] args)
+        {
+
+            const string stateStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
-            while (!ui.Quit) {
-                ui.Update();
+
+            while (!ui.Quit)
+            {
+                ui.Update(gameState);
             }
 
             return 0;

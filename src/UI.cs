@@ -36,7 +36,7 @@ namespace skaktego
             Quit = false;
         }
 
-        public void Update()
+        public void Update(GameState gameState)
         {
             // The main loop
             SDL.SDL_Event e;
@@ -62,22 +62,41 @@ namespace skaktego
                 }
             }
 
-            Draw();
+            Draw(gameState);
 
         }
 
-        public void Draw() {
+        public void Draw(GameState gameState) {
             renderer.Clear();
 
-            // Draw the background
-            renderer.RenderTexture(background);
-
-            // Draw a piece
-            int pt = DateTime.Now.Second % Piece.PIECE_TYPE_COUNT;
-            int pc = (DateTime.Now.Second / Piece.PIECE_TYPE_COUNT) % Piece.PIECE_COLOR_COUNT;
-            renderer.RenderTexture(pieceSprites, null, pieceClips[pt, pc]);
+            DrawBoard(gameState.board, renderer.OutputRect());
 
             renderer.Present();
+        }
+
+        private void DrawBoard(Board board, Rect dst) {
+            // Fill the rectangle with white
+            renderer.SetColor(Graphics.white);
+            renderer.FillRect(dst);
+
+            // Draw the black squares
+            renderer.SetColor(Graphics.black);
+            int x, y;
+            int w = (int)Math.Ceiling(dst.W / (double)board.Size);
+            int h = (int)Math.Ceiling(dst.H / (double)board.Size);
+            for (int i = 0; i < board.Size; i++) {
+                y = h * i;
+                for (int j = 0; j < board.Size; j += 2) {
+                    x = w * j;
+                    // If it is an odd row, nudge the black squares
+                    // one to the right.
+                    if ((i & 1) == 0) {
+                        x += w;
+                    }
+                    Rect square = new Rect(x, y, w, h);
+                    renderer.FillRect(square);
+                }
+            }
         }
 
         static Rect[,] GetPieceClips(Texture texture) {

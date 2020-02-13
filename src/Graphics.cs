@@ -7,6 +7,9 @@ namespace skaktego {
     public static class Graphics {
         public const string RESOURCE_PATH = "resources/";
 
+        public static Color white = new Color(0xFFFFFFFF);
+        public static Color black = new Color(0x000000FF);
+
         public static void InitGraphics() {
             // Initialize SDL
             if (SDL.SDL_Init(SDL.SDL_INIT_EVERYTHING) != 0) {
@@ -58,12 +61,32 @@ namespace skaktego {
             RenPtr = renderer;
         }
 
+        public Rect OutputRect() {
+            int w, h;
+            SDL.SDL_GetRendererOutputSize(RenPtr, out w, out h);
+            return new Rect(0, 0, w, h);
+        }
+
+
         public void Clear() {
             SDL.SDL_RenderClear(RenPtr);
         }
 
         public void Present() {
             SDL.SDL_RenderPresent(RenPtr);
+        }
+
+        public void SetColor(Color color) {
+            SDL.SDL_SetRenderDrawColor(RenPtr, color.R, color.G, color.B, color.A);
+        }
+
+        /// <summary>
+        /// Fill a rectangle with the current color.
+        /// </summary>
+        /// <param name="rect"></param>
+        public void FillRect(Rect rect) {
+            SDL.SDL_Rect _rect = rect.Rct;
+            SDL.SDL_RenderFillRect(RenPtr, ref _rect);
         }
 
         /// <summary>
@@ -176,6 +199,34 @@ namespace skaktego {
             get {
                 return new SDL.SDL_Rect { x=X, y=Y, w=W, h=H };
             }
+        }
+    }
+
+    public class Color {
+        public byte R { get; set; }
+        public byte G { get; set; }
+        public byte B { get; set; }
+        public byte A { get; set; }
+
+        public Color(byte r, byte g, byte b, byte a) {
+            R = r;
+            G = g;
+            B = b;
+            A = a;
+        }
+
+        public Color(byte r, byte g, byte b) {
+            R = r;
+            G = g;
+            B = b;
+            A = 255;
+        }
+
+        public Color(long color) {
+            R = (byte)((color & 0xFF000000) >> 24);
+            G = (byte)((color & 0x00FF0000) >> 16);
+            B = (byte)((color & 0x0000FF00) >> 8);
+            A = (byte)((color & 0x000000FF) >> 0);
         }
     }
     
