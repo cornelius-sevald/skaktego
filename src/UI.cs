@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using SDL2;
 
 namespace skaktego
@@ -20,6 +22,7 @@ namespace skaktego
         private Texture background;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
+        private List<SDL.SDL_Event> events;
 
         public bool Quit { get; private set; }
 
@@ -30,6 +33,8 @@ namespace skaktego
             window = new Window("skaktego", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
             renderer = new Renderer(window);
 
+            events = new List<SDL.SDL_Event>();
+
             background = new Texture(renderer, "background.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
@@ -38,28 +43,15 @@ namespace skaktego
 
         public void Update(GameState gameState)
         {
-            // The main loop
-            SDL.SDL_Event e;
-            // Poll events
-            while (SDL.SDL_PollEvent(out e) != 0)
-            {
-                switch (e.type)
-                {
-                    // Check for quit event
-                    case SDL.SDL_EventType.SDL_QUIT:
-                        Quit = true;
-                        break;
-                    case SDL.SDL_EventType.SDL_KEYDOWN:
-                        switch (e.key.keysym.sym)
-                        {
-                            // Check if user pressed 'q' or escape
-                            case SDL.SDL_Keycode.SDLK_ESCAPE:
-                            case SDL.SDL_Keycode.SDLK_q:
-                                Quit = true;
-                                break;
-                        }
-                        break;
-                }
+            PollEvents();
+
+            // Check if the user wants to quit.
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
+                Quit = true;
+            } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE ||
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q)) {
+                Quit = true;
             }
 
             Draw(gameState);
@@ -79,24 +71,44 @@ namespace skaktego
             renderer.SetColor(Graphics.white);
             renderer.FillRect(dst);
 
-            // Draw the black squares
+            // Draw the black squares & pieces
             renderer.SetColor(Graphics.black);
             int x, y;
             int w = (int)Math.Ceiling(dst.W / (double)board.Size);
             int h = (int)Math.Ceiling(dst.H / (double)board.Size);
             for (int i = 0; i < board.Size; i++) {
-                y = h * i;
-                for (int j = 0; j < board.Size; j += 2) {
+                y = dst.H - h * i - h;
+                for (int j = 0; j < board.Size; j++) {
+                    bool fillSquare = (i + j & 1) == 0;
                     x = w * j;
-                    // If it is an odd row, nudge the black squares
-                    // one to the right.
-                    if ((i & 1) == 0) {
-                        x += w;
-                    }
                     Rect square = new Rect(x, y, w, h);
-                    renderer.FillRect(square);
+
+                    if (fillSquare) {
+                        renderer.FillRect(square);
+                    }
+
+                    Piece piece = board.GetPiece(new BoardPosition(j, i));
+                    if (piece != null) {
+                        DrawPiece(piece, square);
+                    }
                 }
             }
+        }
+
+        private void DrawPiece(Piece piece, Rect dst) {
+            Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
+            renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void PollEvents() {
+            events.Clear();
+
+            SDL.SDL_Event e;
+            while (SDL.SDL_PollEvent(out e) != 0)
+            {
+                events.Add(e);
+            }
+
         }
 
         static Rect[,] GetPieceClips(Texture texture) {
