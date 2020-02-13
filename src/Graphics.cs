@@ -29,7 +29,8 @@ namespace skaktego {
         public Window(string title, int xPos, int yPos, int width, int height) {
             // Create window
             IntPtr window = SDL.SDL_CreateWindow(title, xPos, yPos, width, height,
-                    SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN);
+                    SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
+                    SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             if (window == IntPtr.Zero) {
                 throw new SDLException("CreateWindow");
             }
@@ -66,6 +67,14 @@ namespace skaktego {
         }
 
         /// <summary>
+        /// Draw a Texture to this Renderer.
+        /// </summary>
+        /// <param name="texture">The source texture we want to draw</param>
+        public void RenderTexture(Texture texture) {
+            RenderTexture(texture, null, null);
+        }
+
+        /// <summary>
         /// Draw a Texture to this Renderer at some destination Rect
         /// taking a clip of the texture if desired
         /// </summary>
@@ -83,7 +92,12 @@ namespace skaktego {
                     SDL.SDL_RenderCopy(RenPtr, texture.TexPtr, IntPtr.Zero, ref _dst);
                 }
             } else {
-                SDL.SDL_RenderCopy(RenPtr, texture.TexPtr, IntPtr.Zero, IntPtr.Zero);
+                if (clip != null) {
+                    SDL.SDL_Rect _clip = clip.Rct;
+                    SDL.SDL_RenderCopy(RenPtr, texture.TexPtr, ref _clip, IntPtr.Zero);
+                } else {
+                    SDL.SDL_RenderCopy(RenPtr, texture.TexPtr, IntPtr.Zero, IntPtr.Zero);
+                }
             }
         }
 
