@@ -14,6 +14,8 @@ namespace skaktego
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
 
+            
+
             while (!ui.Quit)
             {
                 ui.Update(gameState);

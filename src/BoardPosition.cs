@@ -22,6 +22,15 @@ namespace skaktego {
             Row = row;
         }
 
+        public BoardPosition(BoardPosition boss) {
+            Column = boss.Column;
+            Row = boss.Row;
+        }
+
+        public BoardPosition Copy() {
+            return new BoardPosition(this);
+        }
+
         public override string ToString() {
             // TODO: Throw error if px > 'i' or py > 9
             char px = (char)('a' + Column);
