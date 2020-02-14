@@ -58,6 +58,7 @@ namespace skaktego {
                 throw new SDLException("CreateRenderer");
             }
 
+            SDL.SDL_SetRenderDrawBlendMode (renderer, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
             RenPtr = renderer;
         }
 

@@ -22,6 +22,7 @@ namespace skaktego
         private Texture background;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
+        private BoardPosition highlightedTile = null;
         private List<SDL.SDL_Event> events;
 
         public bool Quit { get; private set; }
@@ -54,11 +55,36 @@ namespace skaktego
                 Quit = true;
             }
 
+            int mouseX, mouseY;
+            SDL.SDL_GetMouseState(out mouseX, out mouseY);
+
+            Rect screenRect = renderer.OutputRect();
+            Rect boardRect = new Rect(0,0,0,0);
+            boardRect.W = Math.Min(screenRect.H,screenRect.W);
+            boardRect.H = Math.Min(screenRect.H,screenRect.W);
+
+            boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
+            boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
+
+            int boardMouseX = (int) Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
+            int boardMouseY = -1 + gameState.board.Size - ((int) Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+            
+            if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
+                if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
+                    highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
+                } else {
+                    highlightedTile = null;
+                }
+            } else {
+                highlightedTile = null;
+            }
+
             Draw(gameState);
 
         }
 
         public void Draw(GameState gameState) {
+            renderer.SetColor(new Color (0X111111));
             renderer.Clear();
 
             Rect screenRect = renderer.OutputRect();
@@ -66,10 +92,13 @@ namespace skaktego
             boardRect.W = Math.Min(screenRect.H,screenRect.W);
             boardRect.H = Math.Min(screenRect.H,screenRect.W);
 
-            boardRect.X = (screenRect.W - boardRect.W)/2;
-            boardRect.Y = (screenRect.H - boardRect.H)/2;
+            boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
+            boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
             DrawBoard(gameState.board, boardRect);
 
+            if (highlightedTile != null) {
+                HighlightTile(new Color(0XFFFF0055),gameState.board, boardRect, highlightedTile);
+            }
             renderer.Present();
         }
 
@@ -81,8 +110,8 @@ namespace skaktego
             // Draw the black squares & pieces
             renderer.SetColor(Graphics.black);
             int x, y;
-            int w = (int)Math.Ceiling(dst.W / (double)board.Size);
-            int h = (int)Math.Ceiling(dst.H / (double)board.Size);
+            int w = (int) Math.Round(dst.W / (double)board.Size);
+            int h = (int) Math.Round(dst.H / (double)board.Size);
             for (int i = 0; i < board.Size; i++) {
                 y = dst.H - h * i - h + dst.Y;
                 for (int j = 0; j < board.Size; j++) {
@@ -105,6 +134,18 @@ namespace skaktego
         private void DrawPiece(Piece piece, Rect dst) {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos) {
+            int w = (int) Math.Round(boardRect.W / (double)board.Size);
+            int h = (int) Math.Round(boardRect.H / (double)board.Size);
+            int x = boardRect.X + pos.Column * w;
+            int y = boardRect.H + boardRect.Y - pos.Row * h - h;
+
+            Rect dst = new Rect(x,y,w,h);
+
+            renderer.SetColor(color);
+            renderer.FillRect(dst);
         }
 
         private void PollEvents() {
