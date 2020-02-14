@@ -26,6 +26,7 @@ namespace skaktego
         private BoardPosition selectedTile = null;
         private List<SDL.SDL_Event> events;
         private bool isMenuActive = true;
+        private Button[] buttons;
 
         public bool Quit { get; private set; }
 
@@ -38,6 +39,10 @@ namespace skaktego
 
             events = new List<SDL.SDL_Event>();
 
+            buttons = new Button[]{
+                new Button(3/8.0,11/24.0,1/4.0,1/12.0,() => Console.WriteLine("ruth"))
+            };
+
             background = new Texture(renderer, "background.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
@@ -49,13 +54,18 @@ namespace skaktego
             PollEvents();
 
             // Check if the user wants to quit.
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT))
+            {
                 Quit = true;
-            } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q)) {
+            }
+            else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q))
+            {
                 Quit = true;
-            } if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)) {
+            }
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE))
+            {
                 isMenuActive = !isMenuActive;
             }
 
@@ -63,82 +73,108 @@ namespace skaktego
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
 
             Rect screenRect = renderer.OutputRect();
-            if (!isMenuActive) {
-                Rect boardRect = new Rect(0,0,0,0);
-                boardRect.W = Math.Min(screenRect.H,screenRect.W);
-                boardRect.H = Math.Min(screenRect.H,screenRect.W);
 
-                boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
-                boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
+            Rect boardRect = new Rect(0, 0, 0, 0);
+            boardRect.W = Math.Min(screenRect.H, screenRect.W);
+            boardRect.H = Math.Min(screenRect.H, screenRect.W);
 
-                int boardMouseX = (int) Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
-                int boardMouseY = -1 + gameState.board.Size - ((int) Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
-            
-                if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
-                    if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
+            boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
+            boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
+
+            if (!isMenuActive)
+            {
+                int boardMouseX = (int)Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
+                int boardMouseY = -1 + gameState.board.Size - ((int)Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+
+                if (0 <= boardMouseX && boardMouseX < gameState.board.Size)
+                {
+                    if (0 <= boardMouseY && boardMouseY < gameState.board.Size)
+                    {
                         highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
-                    } else {
+                    }
+                    else
+                    {
                         highlightedTile = null;
                     }
-                } else {
+                }
+                else
+                {
                     highlightedTile = null;
                 }
 
-                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP))
+                {
                     selectedTile = highlightedTile;
+                }
+            }
+            else
+            {
+                foreach (Button button in buttons)
+                {
+                    button.Update(mouseX, mouseY, boardRect, events);
                 }
             }
             Draw(gameState);
         }
 
-        public void Draw(GameState gameState) {
-            renderer.SetColor(new Color (0X111111));
+        public void Draw(GameState gameState)
+        {
+            renderer.SetColor(new Color(0X111111));
             renderer.Clear();
 
             Rect screenRect = renderer.OutputRect();
-            Rect boardRect = new Rect(0,0,0,0);
-            boardRect.W = Math.Min(screenRect.H,screenRect.W);
-            boardRect.H = Math.Min(screenRect.H,screenRect.W);
+            Rect boardRect = new Rect(0, 0, 0, 0);
+            boardRect.W = Math.Min(screenRect.H, screenRect.W);
+            boardRect.H = Math.Min(screenRect.H, screenRect.W);
 
-            boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
-            boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
+            boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
+            boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
             DrawBoard(gameState.board, boardRect);
 
-            if (highlightedTile != null) {
-                HighlightTile(new Color(0XFFFF0055),gameState.board, boardRect, highlightedTile);
+            if (highlightedTile != null)
+            {
+                HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile);
             }
-            if (selectedTile != null) {
-                HighlightTile(new Color(0X0000FF55),gameState.board, boardRect, selectedTile);
+            if (selectedTile != null)
+            {
+                HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile);
             }
 
-            if(isMenuActive) {
+            if (isMenuActive)
+            {
                 renderer.SetColor(new Color(0X00000077));
                 renderer.FillRect(screenRect);
-                
 
-                Rect menuRect1 = new Rect(0,0,11,11);
-                Rect menuRect2 = new Rect(0,0,10,10);
 
-                menuRect1.W = (int) Math.Round(boardRect.W * 0.41);
-                menuRect1.H = (int) Math.Round(boardRect.H * 0.51);
-                menuRect2.W = (int) Math.Round(boardRect.W * 0.4);
-                menuRect2.H = (int) Math.Round(boardRect.H * 0.5);
+                Rect menuRect1 = new Rect(0, 0, 11, 11);
+                Rect menuRect2 = new Rect(0, 0, 10, 10);
 
-                menuRect1.X = (int) Math.Round((screenRect.W - menuRect1.W)*0.5);
-                menuRect1.Y = (int) Math.Round((screenRect.H - menuRect1.H)*0.5);
-                menuRect2.X = (int) Math.Round((screenRect.W - menuRect2.W)*0.5);
-                menuRect2.Y = (int) Math.Round((screenRect.H - menuRect2.H)*0.5);
+                menuRect1.W = (int)Math.Round(boardRect.W * 0.41);
+                menuRect1.H = (int)Math.Round(boardRect.H * 0.51);
+                menuRect2.W = (int)Math.Round(boardRect.W * 0.4);
+                menuRect2.H = (int)Math.Round(boardRect.H * 0.5);
+
+                menuRect1.X = (int)Math.Round((screenRect.W - menuRect1.W) * 0.5);
+                menuRect1.Y = (int)Math.Round((screenRect.H - menuRect1.H) * 0.5);
+                menuRect2.X = (int)Math.Round((screenRect.W - menuRect2.W) * 0.5);
+                menuRect2.Y = (int)Math.Round((screenRect.H - menuRect2.H) * 0.5);
 
                 renderer.SetColor(new Color(0XFFFFFFAA));
                 renderer.FillRect(menuRect1);
                 renderer.SetColor(new Color(0X000000DD));
                 renderer.FillRect(menuRect2);
+
+                foreach (Button button in buttons)
+                {
+                    button.Draw(renderer, boardRect);
+                }
             }
 
             renderer.Present();
         }
 
-        private void DrawBoard(Board board, Rect dst) {
+        private void DrawBoard(Board board, Rect dst)
+        {
             // Fill the rectangle with white
             renderer.SetColor(Graphics.white);
             renderer.FillRect(dst);
@@ -146,45 +182,52 @@ namespace skaktego
             // Draw the black squares & pieces
             renderer.SetColor(Graphics.black);
             int x, y;
-            int w = (int) Math.Round(dst.W / (double)board.Size);
-            int h = (int) Math.Round(dst.H / (double)board.Size);
-            for (int i = 0; i < board.Size; i++) {
+            int w = (int)Math.Round(dst.W / (double)board.Size);
+            int h = (int)Math.Round(dst.H / (double)board.Size);
+            for (int i = 0; i < board.Size; i++)
+            {
                 y = dst.H - h * i - h + dst.Y;
-                for (int j = 0; j < board.Size; j++) {
+                for (int j = 0; j < board.Size; j++)
+                {
                     bool fillSquare = (i + j & 1) == 0;
                     x = w * j + dst.X;
                     Rect square = new Rect(x, y, w, h);
 
-                    if (fillSquare) {
+                    if (fillSquare)
+                    {
                         renderer.FillRect(square);
                     }
 
                     Piece piece = board.GetPiece(new BoardPosition(j, i));
-                    if (piece != null) {
+                    if (piece != null)
+                    {
                         DrawPiece(piece, square);
                     }
                 }
             }
         }
 
-        private void DrawPiece(Piece piece, Rect dst) {
+        private void DrawPiece(Piece piece, Rect dst)
+        {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
         }
 
-        private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos) {
-            int w = (int) Math.Round(boardRect.W / (double)board.Size);
-            int h = (int) Math.Round(boardRect.H / (double)board.Size);
+        private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos)
+        {
+            int w = (int)Math.Round(boardRect.W / (double)board.Size);
+            int h = (int)Math.Round(boardRect.H / (double)board.Size);
             int x = boardRect.X + pos.Column * w;
             int y = boardRect.H + boardRect.Y - pos.Row * h - h;
 
-            Rect dst = new Rect(x,y,w,h);
+            Rect dst = new Rect(x, y, w, h);
 
             renderer.SetColor(color);
             renderer.FillRect(dst);
         }
 
-        private void PollEvents() {
+        private void PollEvents()
+        {
             events.Clear();
 
             SDL.SDL_Event e;
@@ -195,15 +238,18 @@ namespace skaktego
 
         }
 
-        static Rect[,] GetPieceClips(Texture texture) {
+        static Rect[,] GetPieceClips(Texture texture)
+        {
             int tW, tH;
             texture.Query(out tW, out tH);
             Rect[,] clips = new Rect[Piece.PIECE_TYPE_COUNT, Piece.PIECE_COLOR_COUNT];
 
             int w = tW / Piece.PIECE_TYPE_COUNT;
             int h = tH / Piece.PIECE_COLOR_COUNT;
-            for (int y = 0; y < Piece.PIECE_COLOR_COUNT; y++) {
-                for (int x = 0; x < Piece.PIECE_TYPE_COUNT; x++) {
+            for (int y = 0; y < Piece.PIECE_COLOR_COUNT; y++)
+            {
+                for (int x = 0; x < Piece.PIECE_TYPE_COUNT; x++)
+                {
                     clips[x, y] = new Rect(x * w, y * w, w, h);
                 }
             }
