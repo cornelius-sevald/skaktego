@@ -25,6 +25,7 @@ namespace skaktego
         private BoardPosition highlightedTile = null;
         private BoardPosition selectedTile = null;
         private List<SDL.SDL_Event> events;
+        private bool isMenuActive = true;
 
         public bool Quit { get; private set; }
 
@@ -51,41 +52,43 @@ namespace skaktego
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
                 Quit = true;
             } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE ||
             e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q)) {
                 Quit = true;
+            } if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)) {
+                isMenuActive = !isMenuActive;
             }
 
             int mouseX, mouseY;
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
 
             Rect screenRect = renderer.OutputRect();
-            Rect boardRect = new Rect(0,0,0,0);
-            boardRect.W = Math.Min(screenRect.H,screenRect.W);
-            boardRect.H = Math.Min(screenRect.H,screenRect.W);
+            if (!isMenuActive) {
+                Rect boardRect = new Rect(0,0,0,0);
+                boardRect.W = Math.Min(screenRect.H,screenRect.W);
+                boardRect.H = Math.Min(screenRect.H,screenRect.W);
 
-            boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
-            boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
+                boardRect.X = (int) Math.Round((screenRect.W - boardRect.W)*0.5);
+                boardRect.Y = (int) Math.Round((screenRect.H - boardRect.H)*0.5);
 
-            int boardMouseX = (int) Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
-            int boardMouseY = -1 + gameState.board.Size - ((int) Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+                int boardMouseX = (int) Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
+                int boardMouseY = -1 + gameState.board.Size - ((int) Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
             
-            if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
-                if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
-                    highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
+                if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
+                    if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
+                        highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
+                    } else {
+                        highlightedTile = null;
+                    }
                 } else {
                     highlightedTile = null;
                 }
-            } else {
-                highlightedTile = null;
-            }
 
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
-                selectedTile = highlightedTile;
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
+                    selectedTile = highlightedTile;
+                }
             }
-
             Draw(gameState);
-
         }
 
         public void Draw(GameState gameState) {
@@ -105,8 +108,33 @@ namespace skaktego
                 HighlightTile(new Color(0XFFFF0055),gameState.board, boardRect, highlightedTile);
             }
             if (selectedTile != null) {
-                HighlightTile(new Color(0XFFFF0099),gameState.board, boardRect, selectedTile);
+                HighlightTile(new Color(0X0000FF55),gameState.board, boardRect, selectedTile);
             }
+
+            if(isMenuActive) {
+                renderer.SetColor(new Color(0X00000077));
+                renderer.FillRect(screenRect);
+                
+
+                Rect menuRect1 = new Rect(0,0,11,11);
+                Rect menuRect2 = new Rect(0,0,10,10);
+
+                menuRect1.W = (int) Math.Round(boardRect.W * 0.41);
+                menuRect1.H = (int) Math.Round(boardRect.H * 0.51);
+                menuRect2.W = (int) Math.Round(boardRect.W * 0.4);
+                menuRect2.H = (int) Math.Round(boardRect.H * 0.5);
+
+                menuRect1.X = (int) Math.Round((screenRect.W - menuRect1.W)*0.5);
+                menuRect1.Y = (int) Math.Round((screenRect.H - menuRect1.H)*0.5);
+                menuRect2.X = (int) Math.Round((screenRect.W - menuRect2.W)*0.5);
+                menuRect2.Y = (int) Math.Round((screenRect.H - menuRect2.H)*0.5);
+
+                renderer.SetColor(new Color(0XFFFFFFAA));
+                renderer.FillRect(menuRect1);
+                renderer.SetColor(new Color(0X000000DD));
+                renderer.FillRect(menuRect2);
+            }
+
             renderer.Present();
         }
 
