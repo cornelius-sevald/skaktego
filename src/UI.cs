@@ -10,7 +10,7 @@ namespace skaktego
     {
         // Screen size
         private const int SCREEN_WIDTH = 640;
-        private const int SCREEN_HEIGHT = 480;
+        private const int SCREEN_HEIGHT = 640;
 
         private const string RESOURCE_PATH = "resources/";
 
@@ -61,7 +61,14 @@ namespace skaktego
         public void Draw(GameState gameState) {
             renderer.Clear();
 
-            DrawBoard(gameState.board, renderer.OutputRect());
+            Rect screenRect = renderer.OutputRect();
+            Rect boardRect = new Rect(0,0,0,0);
+            boardRect.W = Math.Min(screenRect.H,screenRect.W);
+            boardRect.H = Math.Min(screenRect.H,screenRect.W);
+
+            boardRect.X = (screenRect.W - boardRect.W)/2;
+            boardRect.Y = (screenRect.H - boardRect.H)/2;
+            DrawBoard(gameState.board, boardRect);
 
             renderer.Present();
         }
@@ -77,10 +84,10 @@ namespace skaktego
             int w = (int)Math.Ceiling(dst.W / (double)board.Size);
             int h = (int)Math.Ceiling(dst.H / (double)board.Size);
             for (int i = 0; i < board.Size; i++) {
-                y = dst.H - h * i - h;
+                y = dst.H - h * i - h + dst.Y;
                 for (int j = 0; j < board.Size; j++) {
                     bool fillSquare = (i + j & 1) == 0;
-                    x = w * j;
+                    x = w * j + dst.X;
                     Rect square = new Rect(x, y, w, h);
 
                     if (fillSquare) {
