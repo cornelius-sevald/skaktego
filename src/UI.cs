@@ -23,6 +23,7 @@ namespace skaktego
         private Texture pieceSprites;
         private Rect[,] pieceClips;
         private BoardPosition highlightedTile = null;
+        private BoardPosition selectedTile = null;
         private List<SDL.SDL_Event> events;
 
         public bool Quit { get; private set; }
@@ -79,6 +80,10 @@ namespace skaktego
                 highlightedTile = null;
             }
 
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
+                selectedTile = highlightedTile;
+            }
+
             Draw(gameState);
 
         }
@@ -98,6 +103,9 @@ namespace skaktego
 
             if (highlightedTile != null) {
                 HighlightTile(new Color(0XFFFF0055),gameState.board, boardRect, highlightedTile);
+            }
+            if (selectedTile != null) {
+                HighlightTile(new Color(0XFFFF0099),gameState.board, boardRect, selectedTile);
             }
             renderer.Present();
         }
