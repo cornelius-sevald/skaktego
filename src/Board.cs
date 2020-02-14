@@ -30,8 +30,6 @@ namespace skaktego {
                         board.SetPiece(piece, pos);
                     }
                 }
-                // Skip the '/' character.
-                index++;
             }
 
             return board;
@@ -105,6 +103,12 @@ namespace skaktego {
             }
             return string.Join('/', rowStrings);
         }
+
+        public bool IsTileOccupied(BoardPosition pos) {
+            return GetPiece(pos) != null;
+
+        }
+
     }
 
 }
