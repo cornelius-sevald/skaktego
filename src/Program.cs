@@ -14,7 +14,7 @@ namespace skaktego
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
 
-            //Engine.GetLegalKnightMoves(gameState, new BoardPosition(2,2));
+            //Engine.GetLegalKingMoves(gameState, new BoardPosition(3,2));
 
             while (!ui.Quit)
             {
