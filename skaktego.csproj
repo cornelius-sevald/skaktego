@@ -12,6 +12,8 @@
         <None Include="dlls\SDL2\SDL2.dll" Link="%(LinkBase)\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
         <None Include="dlls\SDL2_image\SDL2_image.dll" Link="%(LinkBase)\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
         <None Include="dlls\SDL2_image\zlib1.dll" Link="%(LinkBase)\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="dlls\SDL2_ttf\SDL2_ttf.dll" Link="%(LinkBase)\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
+        <None Include="dlls\SDL2_ttf\libfreetype-6.dll" Link="%(LinkBase)\%(RecursiveDir)%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
 
     <PropertyGroup>

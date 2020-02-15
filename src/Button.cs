@@ -10,14 +10,19 @@ namespace skaktego {
     }
     public class Button {
         public double x, y, w, h;
+        public string text;
+        private Font font;
         private Action action;
         public ButtonStates State {get ; private set;}
 
-        public Button(double x, double y, double w, double h, Action action){
+        public Button(double x, double y, double w, double h,
+        string text, Font font, Action action){
             this.x = x;
             this.y = y;
             this.w = w;
             this.h = h;
+            this.text = text;
+            this.font = font;
             this.action = action;
             State = ButtonStates.Mouseable;
         }
@@ -58,6 +63,10 @@ namespace skaktego {
             }
             renderer.SetColor(buttonColor);
             renderer.FillRect(buttonRect);
+
+            // Draw the text
+            Texture textTexture = font.TextTexture(renderer, text, Graphics.black);
+            renderer.RenderTexture(textTexture, buttonRect, null);
         }
     }
 }

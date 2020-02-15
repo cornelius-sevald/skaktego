@@ -19,6 +19,7 @@ namespace skaktego
 
         private Window window;
         private Renderer renderer;
+        private Font font;
         private Texture background;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
@@ -37,10 +38,12 @@ namespace skaktego
             window = new Window("skaktego", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
             renderer = new Renderer(window);
 
+            font = new Font("playfair-display/PlayfairDisplay-Regular.ttf", 128);
+
             events = new List<SDL.SDL_Event>();
 
             buttons = new Button[]{
-                new Button(3/8.0,11/24.0,1/4.0,1/12.0,() => Console.WriteLine("ruth"))
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "ruth", font, () => Console.WriteLine("ruth"))
             };
 
             background = new Texture(renderer, "background.png");
