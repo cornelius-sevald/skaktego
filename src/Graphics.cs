@@ -22,6 +22,22 @@ namespace skaktego {
                                (int)SDL_image.IMG_InitFlags.IMG_INIT_PNG) {
                 throw new SDLException("IMG_Init");
             }
+
+            // Initialize SDL TTF rendering
+            if (SDL_ttf.TTF_Init() != 0) {
+                throw new SDLException("TTF_Init");
+            }
+        }
+
+        public static void QuitGraphics() {
+            // Quit SDL
+            SDL.SDL_Quit();
+
+            // Quit SDL_image
+            SDL_image.IMG_Quit();
+
+            // Quit SDL_ttf
+            SDL_ttf.TTF_Quit();
         }
 
     }
@@ -35,7 +51,7 @@ namespace skaktego {
                     SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN |
                     SDL.SDL_WindowFlags.SDL_WINDOW_RESIZABLE);
             if (window == IntPtr.Zero) {
-                throw new SDLException("CreateWindow");
+                throw new SDLException("SDL_CreateWindow");
             }
 
             WinPtr = window;
@@ -55,9 +71,10 @@ namespace skaktego {
                     SDL.SDL_RendererFlags.SDL_RENDERER_ACCELERATED |
                     SDL.SDL_RendererFlags.SDL_RENDERER_PRESENTVSYNC);
             if (renderer == IntPtr.Zero) {
-                throw new SDLException("CreateRenderer");
+                throw new SDLException("SDL_CreateRenderer");
             }
 
+            SDL.SDL_SetRenderDrawBlendMode (renderer, SDL.SDL_BlendMode.SDL_BLENDMODE_BLEND);
             RenPtr = renderer;
         }
 
@@ -160,13 +177,24 @@ namespace skaktego {
     public class Texture {
         public IntPtr TexPtr { get; private set; }
 
+        // Create a texture from an image path
         public Texture(Renderer renderer, string name) {
             // Construct the full path
             string path = Path.Combine(Graphics.RESOURCE_PATH, name);
 
             IntPtr texture = SDL_image.IMG_LoadTexture(renderer.RenPtr, path);
             if (texture == IntPtr.Zero) {
-                throw new SDLException("LoadTexture");
+                throw new SDLException("IMG_LoadTexture");
+            }
+
+            TexPtr = texture;
+        }
+
+        // Create a texture from a surface
+        public Texture(Renderer renderer, Surface surface) {
+            IntPtr texture = SDL.SDL_CreateTextureFromSurface(renderer.RenPtr, surface.SurfPtr);
+            if (texture == IntPtr.Zero) {
+                throw new SDLException("SDL_CreateTextureFromSurface");
             }
 
             TexPtr = texture;
@@ -179,6 +207,48 @@ namespace skaktego {
         ~Texture() {
             SDL.SDL_DestroyTexture(TexPtr);
         }
+    }
+
+    public class Surface {
+        public IntPtr SurfPtr { get; private set; }
+
+        // Render some text to a surface
+        public Surface(Font font, string text, Color color) {
+            IntPtr surface = SDL_ttf.TTF_RenderText_Solid(font.FontPtr, text, color.SDLColor());
+            if (surface == IntPtr.Zero) {
+                throw new SDLException("TTF_RenderText_Solid");
+            }
+
+            SurfPtr = surface;
+        }
+    }
+
+    public class Font {
+        public IntPtr FontPtr { get; private set; }
+
+        public Font(string name, int ptsize) {
+            // Construct the full path
+            string path = Path.Combine(Graphics.RESOURCE_PATH, name);
+
+            // Load the font
+            IntPtr font = SDL_ttf.TTF_OpenFont(path, ptsize);
+            if (font == IntPtr.Zero) {
+                throw new SDLException("TTF_OpenFont");
+            }
+
+            FontPtr = font;
+        }
+
+        public Texture TextTexture(Renderer renderer, string text, Color color) {
+            Surface textSurface = new Surface(this, text, color);
+            Texture textTexture = new Texture(renderer, textSurface);
+            return textTexture;
+        }
+
+        ~Font() {
+            SDL_ttf.TTF_CloseFont(FontPtr);
+        }
+        
     }
 
     public class Rect {
@@ -228,12 +298,23 @@ namespace skaktego {
             B = (byte)((color & 0x0000FF00) >> 8);
             A = (byte)((color & 0x000000FF) >> 0);
         }
+
+        // Get a SDL_Color struct.
+        public SDL.SDL_Color SDLColor() {
+            SDL.SDL_Color color;
+            color.r = R;
+            color.g = G;
+            color.b = B;
+            color.a = A;
+
+            return color;
+        }
     }
-    
+
     public class SDLException : Exception
     {
         public SDLException(string message)
-           : base(message + "error: " + SDL.SDL_GetError())
+           : base(message + " error: " + SDL.SDL_GetError())
         {
         }
     }

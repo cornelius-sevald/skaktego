@@ -9,17 +9,19 @@ namespace skaktego
 
         static int Main(string[] args)
         {
-
+            // Initialize
             const string stateStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
 
-            //Engine.GetLegalKingMoves(gameState, new BoardPosition(3,2));
-
-            while (!ui.Quit)
+            // Run the UI.
+            while (!ui.quit)
             {
                 ui.Update(gameState);
             }
+
+            // Clean up
+            ui.Quit();
 
             return 0;
         }
