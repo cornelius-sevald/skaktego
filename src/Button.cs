@@ -49,6 +49,7 @@ namespace skaktego {
             }
             if (State == ButtonStates.Pressed && mouseUp) {
                 action();
+                State = ButtonStates.Moused;
             }
         }
         public void Draw(Renderer renderer, Rect dst) {
