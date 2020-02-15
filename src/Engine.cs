@@ -115,8 +115,24 @@ namespace skaktego {
 
         //checks the legal moves if the piece is a knight
          public static List<BoardPosition> GetLegalKnightMoves(GameState gameState, BoardPosition pos) {
+            Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            return null;
+            //The knight can have a maximum of 8 possible moves, and the only factor is if the move is outside the board or is occupied by the players own piece
+            BoardPosition here = pos.Copy();
+            for (int i = 1; i < 9; i++) {
+                here = pos.Copy();
+                here.Row += (int)Math.Round(2*Math.Sin(i*0.8 + 1));
+                here.Column += (int)Math.Round(2*Math.Sin(i*0.8 - 0.5));;
+                possibleMoves.Push(here.Copy());
+                if (here.Row >= gameState.board.Size || here.Row < 0 || here.Column >= gameState.board.Size || here.Column < 0) {
+                    possibleMoves.Pop();
+                } else if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color == gameState.player) {
+                    possibleMoves.Pop();
+                }
+
+            }
+
+            return new List<BoardPosition>(possibleMoves);
         }
 
         //checks the legal moves if the piece is a bishop
@@ -205,7 +221,24 @@ namespace skaktego {
         //checks the legal moves if the piece is a king
         public static List<BoardPosition> GetLegalKingMoves(GameState gameState, BoardPosition pos) {
 
-            return null;
+            Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
+
+            //The king can have a maximum of 8 possible moves
+            BoardPosition here = pos.Copy();
+            for (int i = 1; i < 9; i++) {
+                here = pos.Copy();
+                here.Row += (int)Math.Round(Math.Sin(i*0.8 + 0.6));
+                here.Column += (int)Math.Round(Math.Sin(i*0.8 - 0.7));;
+                possibleMoves.Push(here.Copy());
+                if (here.Row >= gameState.board.Size || here.Row < 0 || here.Column >= gameState.board.Size || here.Column < 0) {
+                    possibleMoves.Pop();
+                } else if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color == gameState.player) {
+                    possibleMoves.Pop();
+                }
+
+            }
+
+            return new List<BoardPosition>(possibleMoves);
         }
     }
 }
