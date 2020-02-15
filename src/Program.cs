@@ -14,8 +14,14 @@ namespace skaktego
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
 
+<<<<<<< HEAD
             // Run the UI.
             while (!ui.quit)
+=======
+            
+
+            while (!ui.Quit)
+>>>>>>> engine
             {
                 ui.Update(gameState);
             }
