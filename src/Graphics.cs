@@ -29,6 +29,17 @@ namespace skaktego {
             }
         }
 
+        public static void QuitGraphics() {
+            // Quit SDL
+            SDL.SDL_Quit();
+
+            // Quit SDL_image
+            SDL_image.IMG_Quit();
+
+            // Quit SDL_ttf
+            SDL_ttf.TTF_Quit();
+        }
+
     }
 
     public class Window {

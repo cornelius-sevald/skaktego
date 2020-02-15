@@ -29,7 +29,7 @@ namespace skaktego
         private bool isMenuActive = true;
         private Button[] buttons;
 
-        public bool Quit { get; private set; }
+        public bool quit = false;
 
         UI()
         {
@@ -49,7 +49,6 @@ namespace skaktego
             background = new Texture(renderer, "background.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
-            Quit = false;
         }
 
         public void Update(GameState gameState)
@@ -59,12 +58,12 @@ namespace skaktego
             // Check if the user wants to quit.
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT))
             {
-                Quit = true;
+                quit = true;
             }
             else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
           e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q))
             {
-                Quit = true;
+                quit = true;
             }
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
           e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE))
@@ -258,6 +257,11 @@ namespace skaktego
             }
 
             return clips;
+        }
+
+        public void Quit () {
+            Graphics.QuitGraphics();
+            instance = null;
         }
 
         public static UI Instance
