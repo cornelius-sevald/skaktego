@@ -27,7 +27,7 @@ namespace skaktego
         private BoardPosition selectedTile = null;
         private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
-        private bool isMenuActive = true;
+        private bool isMenuActive = false;
         private Button[] buttons;
 
         public bool quit = false;
