@@ -2,11 +2,11 @@ using System;
 
 namespace skaktego {
 
-    public class BoardPosition {
+    public struct BoardPosition {
 
-        public int Column { get; set; }
+        public int column;
 
-        public int Row { get; set; }
+        public int row;
 
         public static BoardPosition FromString(string pos) {
             // TODO: Throw error if px > 'i' or py > 9
@@ -18,23 +18,14 @@ namespace skaktego {
         }
 
         public BoardPosition(int column, int row) {
-            Column = column;
-            Row = row;
-        }
-
-        public BoardPosition(BoardPosition boss) {
-            Column = boss.Column;
-            Row = boss.Row;
-        }
-
-        public BoardPosition Copy() {
-            return new BoardPosition(this);
+            this.column = column;
+            this.row = row;
         }
 
         public override string ToString() {
             // TODO: Throw error if px > 'i' or py > 9
-            char px = (char)('a' + Column);
-            char py = (char)('1' + Row);
+            char px = (char)('a' + column);
+            char py = (char)('1' + row);
             char[] charArr = { px, py };
             return new string(charArr);
         }

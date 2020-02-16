@@ -23,8 +23,8 @@ namespace skaktego
         private Texture background;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
-        private BoardPosition highlightedTile = null;
-        private BoardPosition selectedTile = null;
+        private Nullable<BoardPosition> highlightedTile = null;
+        private Nullable<BoardPosition> selectedTile = null;
         private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
         private bool isMenuActive = false;
@@ -122,9 +122,11 @@ namespace skaktego
             Draw(gameState);
         }
 
-        private void SelectTile(GameState gameState, BoardPosition tile) {
+        private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
             selectedTile = highlightedTile;
-            legalMoves = Engine.GetLegalMoves(gameState, selectedTile);
+            if (selectedTile.HasValue) {
+                legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
+            }
         }
 
         public void Draw(GameState gameState)
@@ -148,11 +150,11 @@ namespace skaktego
             // Draw the higlighted, selected and legal tiles
             if (highlightedTile != null)
             {
-                HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile);
+                HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile.Value);
             }
             if (selectedTile != null)
             {
-                HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile);
+                HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile.Value);
             }
             if (legalMoves != null) {
                 foreach (BoardPosition legalTile in legalMoves) {
@@ -240,8 +242,8 @@ namespace skaktego
         {
             int w = (int)Math.Round(boardRect.W / (double)board.Size);
             int h = (int)Math.Round(boardRect.H / (double)board.Size);
-            int x = boardRect.X + pos.Column * w;
-            int y = boardRect.H + boardRect.Y - pos.Row * h - h;
+            int x = boardRect.X + pos.column * w;
+            int y = boardRect.H + boardRect.Y - pos.row * h - h;
 
             Rect dst = new Rect(x, y, w, h);
 

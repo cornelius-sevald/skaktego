@@ -53,7 +53,7 @@ namespace skaktego {
         }
 
         public Piece GetPiece(BoardPosition pos) {
-            return board[pos.Column, pos.Row];
+            return board[pos.column, pos.row];
         }
 
         public Piece GetPiece(string strPos) {
@@ -62,7 +62,7 @@ namespace skaktego {
         }
 
         public void SetPiece(Piece piece, BoardPosition pos) {
-            board[pos.Column, pos.Row] = piece;
+            board[pos.column, pos.row] = piece;
         }
 
         public void SetPiece(Piece piece, string strPos) {

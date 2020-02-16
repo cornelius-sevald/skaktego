@@ -50,13 +50,13 @@ namespace skaktego {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //checks legal moves in the positive vertical direction from the piece's position
-            BoardPosition here = pos.Copy();
+            BoardPosition here = pos;
             while (true) {
-                here.Row++;
-                if (here.Row >= gameState.board.Size) {
+                here.row++;
+                if (here.row >= gameState.board.Size) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -66,13 +66,13 @@ namespace skaktego {
             }
 
             //checks legal moves in the negative vertical direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Row--;
-                if (here.Row < 0) {
+                here.row--;
+                if (here.row < 0) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -82,13 +82,13 @@ namespace skaktego {
             }
             
             //checks legal moves in the positive horizontal direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Column++;
-                if (here.Column >= gameState.board.Size) {
+                here.column++;
+                if (here.column >= gameState.board.Size) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -98,13 +98,13 @@ namespace skaktego {
             }
 
             //checks legal moves in the negative horizontal direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Column--;
-                if (here.Column < 0) {
+                here.column--;
+                if (here.column < 0) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -120,13 +120,13 @@ namespace skaktego {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //The knight can have a maximum of 8 possible moves, and the only factor is if the move is outside the board or is occupied by the players own piece
-            BoardPosition here = pos.Copy();
+            BoardPosition here = pos;
             for (int i = 1; i < 9; i++) {
-                here = pos.Copy();
-                here.Row += (int)Math.Round(2*Math.Sin(i*0.8 + 1));
-                here.Column += (int)Math.Round(2*Math.Sin(i*0.8 - 0.5));;
-                possibleMoves.Push(here.Copy());
-                if (here.Row >= gameState.board.Size || here.Row < 0 || here.Column >= gameState.board.Size || here.Column < 0) {
+                here = pos;
+                here.row += (int)Math.Round(2*Math.Sin(i*0.8 + 1));
+                here.column += (int)Math.Round(2*Math.Sin(i*0.8 - 0.5));;
+                possibleMoves.Push(here);
+                if (here.row >= gameState.board.Size || here.row < 0 || here.column >= gameState.board.Size || here.column < 0) {
                     possibleMoves.Pop();
                 } else if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color == gameState.player) {
                     possibleMoves.Pop();
@@ -142,14 +142,14 @@ namespace skaktego {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //checks legal moves in the positive vertical and horizontal direction from the piece's position
-            BoardPosition here = pos.Copy();
+            BoardPosition here = pos;
             while (true) {
-                here.Row++;
-                here.Column++;
-                if (here.Row >= gameState.board.Size || here.Column >= gameState.board.Size) {
+                here.row++;
+                here.column++;
+                if (here.row >= gameState.board.Size || here.column >= gameState.board.Size) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -159,14 +159,14 @@ namespace skaktego {
             }
 
             //checks legal moves in the negative vertical and positive horizontal direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Row--;
-                here.Column++;
-                if (here.Row < 0 || here.Column >= gameState.board.Size) {
+                here.row--;
+                here.column++;
+                if (here.row < 0 || here.column >= gameState.board.Size) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -176,14 +176,14 @@ namespace skaktego {
             }
             
             //checks legal moves in the negative vertical and horizontal direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Row--;
-                here.Column--;
-                if (here.Row < 0 || here.Column < 0) {
+                here.row--;
+                here.column--;
+                if (here.row < 0 || here.column < 0) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -193,14 +193,14 @@ namespace skaktego {
             }
 
             //checks legal moves in the positive vertical and negative horizontal direction from the piece's position
-            here = pos.Copy();
+            here = pos;
             while (true) {
-                here.Row++;
-                here.Column--;
-                if (here.Row >= gameState.board.Size || here.Column < 0) {
+                here.row++;
+                here.column--;
+                if (here.row >= gameState.board.Size || here.column < 0) {
                     break;
                 }
-                possibleMoves.Push(here.Copy());
+                possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
                     if(gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
@@ -226,13 +226,13 @@ namespace skaktego {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //The king can have a maximum of 8 possible moves
-            BoardPosition here = pos.Copy();
+            BoardPosition here = pos;
             for (int i = 1; i < 9; i++) {
-                here = pos.Copy();
-                here.Row += (int)Math.Round(Math.Sin(i*0.8 + 0.6));
-                here.Column += (int)Math.Round(Math.Sin(i*0.8 - 0.7));;
-                possibleMoves.Push(here.Copy());
-                if (here.Row >= gameState.board.Size || here.Row < 0 || here.Column >= gameState.board.Size || here.Column < 0) {
+                here = pos;
+                here.row += (int)Math.Round(Math.Sin(i*0.8 + 0.6));
+                here.column += (int)Math.Round(Math.Sin(i*0.8 - 0.7));;
+                possibleMoves.Push(here);
+                if (here.row >= gameState.board.Size || here.row < 0 || here.column >= gameState.board.Size || here.column < 0) {
                     possibleMoves.Pop();
                 } else if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color == gameState.player) {
                     possibleMoves.Pop();

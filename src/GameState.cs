@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Text;
 
@@ -52,7 +53,7 @@ namespace skaktego {
         public Board board;
         public ChessColors player;
         public CastlingInfo castling;
-        public BoardPosition enPassant;
+        public Nullable<BoardPosition> enPassant;
         public int halfmoveClock = 0;
         public int fullmoveClock = 1;
 
@@ -69,7 +70,7 @@ namespace skaktego {
         }
 
         public GameState(Board board, ChessColors player, CastlingInfo castling,
-        BoardPosition enPassant, int halfmoveClock, int fullmoveClock) {
+        Nullable<BoardPosition> enPassant, int halfmoveClock, int fullmoveClock) {
             this.board = board;
             this.player = player;
             this.castling = castling;
@@ -86,7 +87,12 @@ namespace skaktego {
             Board board = Board.FromString(splitStr[0]);
             ChessColors player = ChessColorsMethods.FromChar(splitStr[1][0]);
             CastlingInfo castling = CastlingInfo.FromString(splitStr[2]);
-            BoardPosition enPassant = splitStr[3] == "-" ? null : BoardPosition.FromString(splitStr[3]);
+
+            Nullable<BoardPosition> enPassant = null;
+            if (splitStr[3] != "-") {
+                enPassant = BoardPosition.FromString(splitStr[3]);
+            }
+
             int halfmoveClock = int.Parse(splitStr[4]);
             int fullmoveClock = int.Parse(splitStr[5]);
 
