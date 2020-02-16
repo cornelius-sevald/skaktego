@@ -41,8 +41,31 @@ namespace skaktego {
 
         //checks the legal moves if the piece is a pawn
         public static List<BoardPosition> GetLegalPawnMoves(GameState gameState, BoardPosition pos) {
+            Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            return null;
+            //checks legal moves for the pawn assuming it have never moved
+            BoardPosition here = pos;
+            here.row++;
+            if (!gameState.board.IsTileOccupied(here)) {
+                possibleMoves.Push(here);
+                here.row++;
+                if (!gameState.board.IsTileOccupied(here)) {
+                    possibleMoves.Push(here);
+                }
+            }
+
+            here = pos;
+            here.row++;
+            here.column++;
+            if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
+                possibleMoves.Push(here);
+            }
+            here.column -= 2;
+            if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
+                possibleMoves.Push(here);
+            }
+            
+            return new List<BoardPosition>(possibleMoves);
         }
 
         //checks the legal moves if the piece is a rook
