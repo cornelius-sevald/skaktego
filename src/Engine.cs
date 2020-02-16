@@ -9,7 +9,9 @@ namespace skaktego {
         //Finds the piece of the current tile, and then redirects to specific move checker
         public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
-            if (piece == null) {
+            // There are no legal moves, if there is no piece
+            // or it is not the piece's colors turn
+            if (piece == null || piece.Color != gameState.player) {
                 return new List<BoardPosition>();
             }
             switch (piece.Type) {

@@ -25,6 +25,7 @@ namespace skaktego
         private Rect[,] pieceClips;
         private BoardPosition highlightedTile = null;
         private BoardPosition selectedTile = null;
+        private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
         private bool isMenuActive = true;
         private Button[] buttons;
@@ -39,6 +40,8 @@ namespace skaktego
             renderer = new Renderer(window);
 
             font = new Font("playfair-display/PlayfairDisplay-Regular.ttf", 128);
+
+            legalMoves = new List<BoardPosition>();
 
             events = new List<SDL.SDL_Event>();
 
@@ -106,7 +109,7 @@ namespace skaktego
 
                 if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP))
                 {
-                    selectedTile = highlightedTile;
+                    SelectTile(gameState, highlightedTile);
                 }
             }
             else
@@ -119,20 +122,30 @@ namespace skaktego
             Draw(gameState);
         }
 
+        private void SelectTile(GameState gameState, BoardPosition tile) {
+            selectedTile = highlightedTile;
+            legalMoves = Engine.GetLegalMoves(gameState, selectedTile);
+        }
+
         public void Draw(GameState gameState)
         {
+            // Draw the background
+            // and clear the screen
             renderer.SetColor(new Color(0X111111));
             renderer.Clear();
 
+            // Set up screen geometry
             Rect screenRect = renderer.OutputRect();
             Rect boardRect = new Rect(0, 0, 0, 0);
             boardRect.W = Math.Min(screenRect.H, screenRect.W);
             boardRect.H = Math.Min(screenRect.H, screenRect.W);
 
+            // Draw the board
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
             DrawBoard(gameState.board, boardRect);
 
+            // Draw the higlighted, selected and legal tiles
             if (highlightedTile != null)
             {
                 HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile);
@@ -141,13 +154,20 @@ namespace skaktego
             {
                 HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile);
             }
+            if (legalMoves != null) {
+                foreach (BoardPosition legalTile in legalMoves) {
+                    HighlightTile(new Color(0X11FF1155), gameState.board, boardRect, legalTile);
+                }
+            }
 
+            // Draw the menu, if it is active
             if (isMenuActive)
             {
+                // Draw a dark overlay
                 renderer.SetColor(new Color(0X00000077));
                 renderer.FillRect(screenRect);
 
-
+                // Draw the menu rectangle
                 Rect menuRect1 = new Rect(0, 0, 11, 11);
                 Rect menuRect2 = new Rect(0, 0, 10, 10);
 
@@ -166,6 +186,7 @@ namespace skaktego
                 renderer.SetColor(new Color(0X000000DD));
                 renderer.FillRect(menuRect2);
 
+                // Draw the buttons in the menu
                 foreach (Button button in buttons)
                 {
                     button.Draw(renderer, boardRect);
