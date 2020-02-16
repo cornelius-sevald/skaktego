@@ -13,7 +13,10 @@ namespace skaktego {
 
         public ChessColors Color { get; private set; }
         public PieceTypes Type { get; private set; }
-        //public int Index { get => (int)Type + (int)Color * PIECE_TYPE_COUNT; }
+
+        // This is only useful for pawns,
+        // and will be ignored for all other pieces
+        public bool hasMoved = true;
 
         /// <summary>
         /// Create a new piece from a character.
@@ -22,6 +25,13 @@ namespace skaktego {
         public static Piece FromChar(char c) {
             ChessColors color;
             PieceTypes type;
+
+            // Check for pawn special case
+            if (c == 'ℙ') {
+                return new Piece(ChessColors.White, PieceTypes.Pawn, false);
+            } else if (c == '℗') {
+                return new Piece(ChessColors.Black, PieceTypes.Pawn, false);
+            }
 
             color = Char.IsLower(c) ? ChessColors.Black : ChessColors.White;
 
@@ -59,13 +69,24 @@ namespace skaktego {
         /// </summary>
         /// <param name="color">The color the piece belongs to.</param>
         /// <param name="type">The type of the piece.</param>
-        public Piece(ChessColors color, PieceTypes type) {
+        public Piece(ChessColors color, PieceTypes type, bool hasMoved=true) {
             Color = color;
             Type = type;
+            this.hasMoved = hasMoved;
         }
 
 
         public char ToChar() {
+
+            // Check for pawn special case
+            if (Type == PieceTypes.Pawn && !hasMoved) {
+                if (Color == ChessColors.White) {
+                    return 'ℙ';
+                } else {
+                    return '℗';
+                }
+            }
+
             char c = '\0';
             switch (Type) {
                 case PieceTypes.King:

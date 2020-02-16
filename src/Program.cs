@@ -10,7 +10,7 @@ namespace skaktego
         static int Main(string[] args)
         {
             // Initialize
-            const string stateStr = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+            const string stateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq - 0 1";
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
 
