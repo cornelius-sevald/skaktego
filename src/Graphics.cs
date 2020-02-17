@@ -221,6 +221,10 @@ namespace skaktego {
 
             SurfPtr = surface;
         }
+
+        ~Surface() {
+            SDL.SDL_FreeSurface(SurfPtr);
+        }
     }
 
     public class Font {
