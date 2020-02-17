@@ -42,28 +42,42 @@ namespace skaktego {
         //checks the legal moves if the piece is a pawn
         public static List<BoardPosition> GetLegalPawnMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
+            Piece piece = gameState.board.GetPiece(pos);
 
-            //checks legal moves for the pawn assuming it have never moved
+            //checks legal moves without capture for the pawn
             BoardPosition here = pos;
             here.row++;
-            if (!gameState.board.IsTileOccupied(here)) {
+            if (here.row < gameState.board.Size && !gameState.board.IsTileOccupied(here)) {
                 possibleMoves.Push(here);
-                here.row++;
-                if (!gameState.board.IsTileOccupied(here)) {
+                if(!piece.hasMoved) {
+                    here.row++;
+                    if (here.row < gameState.board.Size && !gameState.board.IsTileOccupied(here)) {
+                        possibleMoves.Push(here);
+                    }
+                }
+            }   
+
+            //checks legal captures for the pawn
+            here = pos;
+            here.row++;
+            here.column++;
+            if(here.row < gameState.board.Size && here.column < gameState.board.Size) {
+                if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
+                    possibleMoves.Push(here);
+                } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
+                    possibleMoves.Push(here);
+                }
+            }
+            here.column -= 2;
+            if(here.row < gameState.board.Size && here.column >= 0) {
+                if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
+                    possibleMoves.Push(here);
+                } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
                     possibleMoves.Push(here);
                 }
             }
 
-            here = pos;
-            here.row++;
-            here.column++;
-            if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
-                possibleMoves.Push(here);
-            }
-            here.column -= 2;
-            if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
-                possibleMoves.Push(here);
-            }
+
             
             return new List<BoardPosition>(possibleMoves);
         }
