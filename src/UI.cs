@@ -125,7 +125,7 @@ namespace skaktego
         private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
             selectedTile = highlightedTile;
             if (selectedTile.HasValue) {
-                legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
+                legalMoves = Engine.GetPseudoLegalMoves(gameState, selectedTile.Value);
             }
         }
 

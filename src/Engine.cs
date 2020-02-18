@@ -6,9 +6,13 @@ namespace skaktego {
 
     public static class Engine{
 
+        
         //Finds the piece of the current tile, and then redirects to specific move checker
         public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
+            return GetPseudoLegalMoves(gameState, pos, piece);
+        }
+        public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
             // There are no PseudoLegal moves, if there is no piece
             // or it is not the piece's colors turn
             if (piece == null || piece.Color != gameState.player) {
@@ -16,7 +20,7 @@ namespace skaktego {
             }
             switch (piece.Type) {
                 case PieceTypes.Pawn:
-                    return GetPseudoLegalPawnMoves(gameState, pos);
+                    return GetPseudoLegalPawnMoves(gameState, pos, piece);
 
                 case PieceTypes.Rook:
                     return GetPseudoLegalRookMoves(gameState, pos);
@@ -40,9 +44,8 @@ namespace skaktego {
         }
 
         //checks the PseudoLegal moves if the piece is a pawn
-        public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos) {
+        public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos, Piece piece) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
-            Piece piece = gameState.board.GetPiece(pos);
 
             //checks PseudoLegal moves without capture for the pawn
             BoardPosition here = pos;
@@ -278,6 +281,20 @@ namespace skaktego {
             }
 
             return new List<BoardPosition>(possibleMoves);
+        }
+
+        public static bool IsTileAttacked(GameState gameState, BoardPosition pos) {
+            foreach (PieceTypes type in Enum.GetValues(typeof(PieceTypes))) {
+                var piece = new Piece(gameState.player, type);
+                List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
+                foreach (BoardPosition move in moves) {
+                    Piece attackedPiece = gameState.board.GetPiece(move);
+                    if (attackedPiece != null && attackedPiece.Type == type) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
     }
 }
