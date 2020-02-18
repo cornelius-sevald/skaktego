@@ -11,9 +11,10 @@ namespace skaktego {
     public class Button {
         public double x, y, w, h;
         public string text;
+        public ButtonStates State {get ; private set;}
         private Font font;
         private Action action;
-        public ButtonStates State {get ; private set;}
+        private Texture textTexture = null;
 
         public Button(double x, double y, double w, double h,
         string text, Font font, Action action){
@@ -68,11 +69,12 @@ namespace skaktego {
             renderer.FillRect(buttonRect);
 
             // Draw the text
-            Surface textSurf = font.TextSurface(text, Graphics.black);
-            Texture textTexture = new Texture(renderer, textSurf);
+            if (textTexture == null) {
+                using (Surface textSurf = font.TextSurface(text, Graphics.black)) {
+                    textTexture = new Texture(renderer, textSurf);
+                }
+            }
             renderer.RenderTexture(textTexture, textRect, null);
-            textSurf.Dispose();
-            textTexture.Dispose();
         }
     }
 }
