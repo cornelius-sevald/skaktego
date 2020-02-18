@@ -174,7 +174,7 @@ namespace skaktego {
         }
     }
 
-    public class Texture {
+    public class Texture : IDisposable {
         public IntPtr TexPtr { get; private set; }
 
         // Create a texture from an image path
@@ -204,12 +204,25 @@ namespace skaktego {
             SDL.SDL_QueryTexture(TexPtr, out _, out _, out w, out h);
         }
 
+        protected virtual void Dispose(bool disposing) {
+            if (TexPtr != IntPtr.Zero) // only dispose once!
+            {
+                SDL.SDL_DestroyTexture(TexPtr);
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            // tell the GC not to finalize
+            GC.SuppressFinalize(this);
+        }
+
         ~Texture() {
-            SDL.SDL_DestroyTexture(TexPtr);
+            Dispose(false);
         }
     }
 
-    public class Surface {
+    public class Surface : IDisposable {
         public IntPtr SurfPtr { get; private set; }
 
         // Render some text to a surface
@@ -222,12 +235,25 @@ namespace skaktego {
             SurfPtr = surface;
         }
 
+        protected virtual void Dispose(bool disposing) {
+            if (SurfPtr != IntPtr.Zero) // only dispose once!
+            {
+                SDL.SDL_FreeSurface(SurfPtr);
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            // tell the GC not to finalize
+            GC.SuppressFinalize(this);
+        }
+
         ~Surface() {
-            SDL.SDL_FreeSurface(SurfPtr);
+            Dispose(false);
         }
     }
 
-    public class Font {
+    public class Font : IDisposable {
         public IntPtr FontPtr { get; private set; }
 
         public Font(string name, int ptsize) {
@@ -244,13 +270,28 @@ namespace skaktego {
         }
 
         public Texture TextTexture(Renderer renderer, string text, Color color) {
-            Surface textSurface = new Surface(this, text, color);
-            Texture textTexture = new Texture(renderer, textSurface);
+            Texture textTexture = null;
+            using (Surface textSurface = new Surface(this, text, color)) {
+                textTexture = new Texture(renderer, textSurface);
+            }
             return textTexture;
         }
 
+        protected virtual void Dispose(bool disposing) {
+            if (FontPtr != IntPtr.Zero) // only dispose once!
+            {
+                SDL_ttf.TTF_CloseFont(FontPtr);
+            }
+        }
+
+        public void Dispose() {
+            Dispose(true);
+            // tell the GC not to finalize
+            GC.SuppressFinalize(this);
+        }
+
         ~Font() {
-            SDL_ttf.TTF_CloseFont(FontPtr);
+            Dispose(false);
         }
         
     }
