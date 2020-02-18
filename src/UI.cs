@@ -46,7 +46,9 @@ namespace skaktego
             events = new List<SDL.SDL_Event>();
 
             buttons = new Button[]{
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "ruth", font, () => Console.WriteLine("ruth"))
+                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => Console.WriteLine("Unimplemented")),
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
             };
 
             background = new Texture(renderer, "background.png");
