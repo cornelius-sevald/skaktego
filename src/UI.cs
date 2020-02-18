@@ -54,7 +54,7 @@ namespace skaktego
             pieceClips = UI.GetPieceClips(pieceSprites);
         }
 
-        public void Update(GameState gameState)
+        public void Update(ref GameState gameState)
         {
             PollEvents();
 
@@ -109,6 +109,10 @@ namespace skaktego
 
                 if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP))
                 {
+                    // If a tile is already selected, attempt to apply the move
+                    if (selectedTile.HasValue && highlightedTile.HasValue) {
+                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value);
+                    }
                     SelectTile(gameState, highlightedTile);
                 }
             }

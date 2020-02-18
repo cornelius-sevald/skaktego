@@ -43,6 +43,80 @@ namespace skaktego {
             }
         }
 
+        /// <summary>
+        /// Advance an entire turn.
+        /// 
+        /// Currently does not implement castling or queening, and only checks
+        /// for pseudo-legal moves.
+        /// </summary>
+        /// <param name="gameState">The current game state</param>
+        /// <param name="from">The position to move the piece from</param>
+        /// <param name="to">The position to move the piece to</param>
+        /// <param name="strict">Should the moved be checked if it is legal
+        /// before being applied?</param>
+        /// <returns></returns>
+        public static GameState ApplyMove(GameState gameState, BoardPosition from, BoardPosition to, bool strict=true) {
+            Piece piece = gameState.board.GetPiece(from);
+
+            if (strict) {
+                // The move is illegal if it is not the current player's turn
+                if (piece == null || piece.Color != gameState.player) {
+                    return gameState;
+                }
+
+                // TODO: Change to `legalMoves` when the method is implemented
+                List<BoardPosition> pseudoLegalMoves = GetPseudoLegalMoves(gameState, from, piece);
+                // If the move is not legal, do not apply it
+                if (!pseudoLegalMoves.Contains(to)) {
+                    return gameState;
+                }
+            }
+
+            var newGameState = GameState.FromString(gameState.ToString());
+            newGameState.board.SetPiece(null, from);
+            Piece captured = newGameState.board.CapturePiece(to);
+            newGameState.board.SetPiece(piece, to);
+            piece.hasMoved = true;
+
+            // Check if a pawn is captured due to en passant
+            if (to == newGameState.enPassant) {
+                BoardPosition enPassantCapture;
+                enPassantCapture.column = to.column;
+
+                switch (newGameState.player) {
+                    case ChessColors.Black:
+                        enPassantCapture.row = to.row + 1;
+                        break;
+                    default:
+                        enPassantCapture.row = to.row - 1;
+                        break;
+                }
+
+                captured = newGameState.board.CapturePiece(enPassantCapture);
+            }
+
+            // Update en passant
+            if (piece.Type == PieceTypes.Pawn && Math.Abs(from.row - to.row) == 2) {
+                newGameState.enPassant = new BoardPosition(from.column, (from.row + to.row) / 2);
+            } else {
+                newGameState.enPassant = null;
+            }
+
+            // Advance the game clocks.
+            if (captured == null && piece.Type != PieceTypes.Pawn) {
+                newGameState.halfmoveClock++;
+            } else {
+                newGameState.halfmoveClock = 0;
+            }
+            if (newGameState.player == ChessColors.Black) {
+                newGameState.fullmoveClock++;
+            }
+
+            newGameState.player = newGameState.player.Other();
+
+            return newGameState;
+        }
+
         //checks the PseudoLegal moves if the piece is a pawn
         public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos, Piece piece) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();

@@ -70,6 +70,12 @@ namespace skaktego {
             SetPiece(piece, pos);
         }
 
+        public Piece CapturePiece(BoardPosition pos) {
+            var captured = GetPiece(pos);
+            SetPiece(null, pos);
+            return captured;
+        }
+
         public override string ToString() {
             StringBuilder rowStr = new StringBuilder(Size);
 
