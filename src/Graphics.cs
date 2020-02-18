@@ -269,12 +269,9 @@ namespace skaktego {
             FontPtr = font;
         }
 
-        public Texture TextTexture(Renderer renderer, string text, Color color) {
-            Texture textTexture = null;
-            using (Surface textSurface = new Surface(this, text, color)) {
-                textTexture = new Texture(renderer, textSurface);
-            }
-            return textTexture;
+        public Surface TextSurface(string text, Color color) {
+            Surface textSurface = new Surface(this, text, color);
+            return textSurface;
         }
 
         protected virtual void Dispose(bool disposing) {

@@ -68,9 +68,11 @@ namespace skaktego {
             renderer.FillRect(buttonRect);
 
             // Draw the text
-            using (Texture textTexture = font.TextTexture(renderer, text, Graphics.black)) {
-                renderer.RenderTexture(textTexture, textRect, null);
-            }
+            Surface textSurf = font.TextSurface(text, Graphics.black);
+            Texture textTexture = new Texture(renderer, textSurf);
+            renderer.RenderTexture(textTexture, textRect, null);
+            textSurf.Dispose();
+            textTexture.Dispose();
         }
     }
 }
