@@ -65,11 +65,11 @@ namespace skaktego {
             if (gameState.player == ChessColors.Black) {
                 here = pos;
                 here.row--;
-                if (here.row > 0 && !gameState.board.IsTileOccupied(here)) {
+                if (here.row >= 0 && !gameState.board.IsTileOccupied(here)) {
                     possibleMoves.Push(here);
                     if(!piece.hasMoved) {
                         here.row--;
-                        if (here.row > 0 && !gameState.board.IsTileOccupied(here)) {
+                        if (here.row >= 0 && !gameState.board.IsTileOccupied(here)) {
                             possibleMoves.Push(here);
                         }
                     }
@@ -102,7 +102,7 @@ namespace skaktego {
                 here = pos;
                 here.row--;
                 here.column++;
-                if(here.row > 0 && here.column < gameState.board.Size) {
+                if(here.row >= 0 && here.column < gameState.board.Size) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
@@ -110,7 +110,7 @@ namespace skaktego {
                     }
                 }
                 here.column -= 2;
-                if(here.row > 0 && here.column >= 0) {
+                if(here.row >= 0 && here.column >= 0) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
