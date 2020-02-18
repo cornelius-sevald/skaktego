@@ -98,7 +98,7 @@ namespace skaktego {
                 }
             }
 
-            if (gameState.player == ChessColors.White) {
+            if (gameState.player == ChessColors.Black) {
                 here = pos;
                 here.row--;
                 here.column++;
