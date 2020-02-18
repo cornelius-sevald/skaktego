@@ -7,31 +7,31 @@ namespace skaktego {
     public static class Engine{
 
         //Finds the piece of the current tile, and then redirects to specific move checker
-        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos) {
+        public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
-            // There are no legal moves, if there is no piece
+            // There are no PseudoLegal moves, if there is no piece
             // or it is not the piece's colors turn
             if (piece == null || piece.Color != gameState.player) {
                 return new List<BoardPosition>();
             }
             switch (piece.Type) {
                 case PieceTypes.Pawn:
-                    return GetLegalPawnMoves(gameState, pos);
+                    return GetPseudoLegalPawnMoves(gameState, pos);
 
                 case PieceTypes.Rook:
-                    return GetLegalRookMoves(gameState, pos);
+                    return GetPseudoLegalRookMoves(gameState, pos);
 
                 case PieceTypes.Knight:
-                    return GetLegalKnightMoves(gameState, pos);
+                    return GetPseudoLegalKnightMoves(gameState, pos);
 
                 case PieceTypes.Bishop:
-                    return GetLegalBishopMoves(gameState, pos);
+                    return GetPseudoLegalBishopMoves(gameState, pos);
 
                 case PieceTypes.Queen:
-                    return GetLegalQueenMoves(gameState, pos);
+                    return GetPseudoLegalQueenMoves(gameState, pos);
 
                 case PieceTypes.King:
-                    return GetLegalKingMoves(gameState, pos);
+                    return GetPseudoLegalKingMoves(gameState, pos);
 
                 default:
                     throw new ArgumentException("Unknown piece type " + piece.Type);
@@ -39,12 +39,12 @@ namespace skaktego {
             }
         }
 
-        //checks the legal moves if the piece is a pawn
-        public static List<BoardPosition> GetLegalPawnMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a pawn
+        public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
             Piece piece = gameState.board.GetPiece(pos);
 
-            //checks legal moves without capture for the pawn
+            //checks PseudoLegal moves without capture for the pawn
             BoardPosition here = pos;
             here.row++;
             if (here.row < gameState.board.Size && !gameState.board.IsTileOccupied(here)) {
@@ -57,7 +57,7 @@ namespace skaktego {
                 }
             }   
 
-            //checks legal captures for the pawn
+            //checks PseudoLegal captures for the pawn
             here = pos;
             here.row++;
             here.column++;
@@ -82,11 +82,11 @@ namespace skaktego {
             return new List<BoardPosition>(possibleMoves);
         }
 
-        //checks the legal moves if the piece is a rook
-        public static List<BoardPosition> GetLegalRookMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a rook
+        public static List<BoardPosition> GetPseudoLegalRookMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //checks legal moves in the positive vertical direction from the piece's position
+            //checks PseudoLegal moves in the positive vertical direction from the piece's position
             BoardPosition here = pos;
             while (true) {
                 here.row++;
@@ -102,7 +102,7 @@ namespace skaktego {
                 }
             }
 
-            //checks legal moves in the negative vertical direction from the piece's position
+            //checks PseudoLegal moves in the negative vertical direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -118,7 +118,7 @@ namespace skaktego {
                 }
             }
             
-            //checks legal moves in the positive horizontal direction from the piece's position
+            //checks PseudoLegal moves in the positive horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.column++;
@@ -134,7 +134,7 @@ namespace skaktego {
                 }
             }
 
-            //checks legal moves in the negative horizontal direction from the piece's position
+            //checks PseudoLegal moves in the negative horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.column--;
@@ -152,8 +152,8 @@ namespace skaktego {
             return new List<BoardPosition>(possibleMoves);
          }
 
-        //checks the legal moves if the piece is a knight
-         public static List<BoardPosition> GetLegalKnightMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a knight
+         public static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //The knight can have a maximum of 8 possible moves, and the only factor is if the move is outside the board or is occupied by the players own piece
@@ -174,11 +174,11 @@ namespace skaktego {
             return new List<BoardPosition>(possibleMoves);
         }
 
-        //checks the legal moves if the piece is a bishop
-        public static List<BoardPosition> GetLegalBishopMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a bishop
+        public static List<BoardPosition> GetPseudoLegalBishopMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //checks legal moves in the positive vertical and horizontal direction from the piece's position
+            //checks PseudoLegal moves in the positive vertical and horizontal direction from the piece's position
             BoardPosition here = pos;
             while (true) {
                 here.row++;
@@ -195,7 +195,7 @@ namespace skaktego {
                 }
             }
 
-            //checks legal moves in the negative vertical and positive horizontal direction from the piece's position
+            //checks PseudoLegal moves in the negative vertical and positive horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -212,7 +212,7 @@ namespace skaktego {
                 }
             }
             
-            //checks legal moves in the negative vertical and horizontal direction from the piece's position
+            //checks PseudoLegal moves in the negative vertical and horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -229,7 +229,7 @@ namespace skaktego {
                 }
             }
 
-            //checks legal moves in the positive vertical and negative horizontal direction from the piece's position
+            //checks PseudoLegal moves in the positive vertical and negative horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row++;
@@ -248,17 +248,17 @@ namespace skaktego {
             return new List<BoardPosition>(possibleMoves);
         }
 
-        //checks the legal moves if the piece is a queen
-        public static List<BoardPosition> GetLegalQueenMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a queen
+        public static List<BoardPosition> GetPseudoLegalQueenMoves(GameState gameState, BoardPosition pos) {
 
             //Using the rook and bishop move checkers as they will cover all the queens movement options
-            List<BoardPosition> fakeRook = GetLegalRookMoves(gameState, pos);
-            List<BoardPosition> fakeBishop = GetLegalBishopMoves(gameState, pos);
+            List<BoardPosition> fakeRook = GetPseudoLegalRookMoves(gameState, pos);
+            List<BoardPosition> fakeBishop = GetPseudoLegalBishopMoves(gameState, pos);
             return fakeRook.Concat(fakeBishop).ToList();
         }
 
-        //checks the legal moves if the piece is a king
-        public static List<BoardPosition> GetLegalKingMoves(GameState gameState, BoardPosition pos) {
+        //checks the PseudoLegal moves if the piece is a king
+        public static List<BoardPosition> GetPseudoLegalKingMoves(GameState gameState, BoardPosition pos) {
 
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
