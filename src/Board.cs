@@ -17,12 +17,12 @@ namespace skaktego {
             for (int j = size - 1; j >= 0; j--) {
                 string row = rows[size - j - 1];
                 int index = 0;
-                // Start from the right (from white's perspective).
-                for (int i = size - 1; i >= 0; i--) {
+                // Start from the left (from white's perspective).
+                for (int i = 0; i < size; i++) {
                     char c = row[index++];
                     if (Char.IsDigit(c)) {
                         // Skip ahead if there are empty cells.
-                        i -= (int)Char.GetNumericValue(c) - 1;
+                        i += (int)Char.GetNumericValue(c) - 1;
                     } else {
                         // Otherwise, place a piece.
                         var pos = new BoardPosition(i, j);
