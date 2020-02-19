@@ -86,8 +86,8 @@ namespace skaktego {
                 // Record the number of consecutive empty cells.
                 int emptyCells = 0;
 
-                // Start from the right (from white's perspective).
-                for (int i = Size - 1; i >= 0; i--) {
+                // Start from the left (from white's perspective).
+                for (int i = 0; i < Size; i++) {
                     var pos = new BoardPosition(i, j);
                     var piece = GetPiece(pos);
                     if (piece == null) {
