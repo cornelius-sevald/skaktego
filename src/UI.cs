@@ -9,8 +9,8 @@ namespace skaktego
     public sealed class UI
     {
         // Screen size
-        private const int SCREEN_WIDTH = 640;
-        private const int SCREEN_HEIGHT = 640;
+        private const int SCREEN_WIDTH = 800;
+        private const int SCREEN_HEIGHT = 450;
 
         private const string RESOURCE_PATH = "resources/";
 
@@ -187,13 +187,15 @@ namespace skaktego
                 bgRect.W = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgW);
                 bgRect.H = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgH);
 
-                bgRect.X = (screenRect.X - screenRect.X /2);
-                bgRect.Y = (screenRect.Y - screenRect.Y /2);
+                bgRect.X = (screenRect.W - bgRect.W) / 2;
+                bgRect.Y = 0;
                 renderer.RenderTexture(menuBG, bgRect, null);
 
                 Rect logoRect = new Rect(0,0,0,0);
-                logoRect.W = 548;
-                logoRect.H = 200;
+                int logoW, logoH;
+                menuLogo.Query(out logoW, out logoH);
+                logoRect.W = (int)((Math.Min(screenRect.H / (double)logoH, screenRect.W / (double)logoW) * logoW) * 0.4);
+                logoRect.H = (int)((Math.Min(screenRect.H / (double)logoH, screenRect.W / (double)logoW) * logoH) * 0.4);
 
                 logoRect.X = (int)Math.Round((screenRect.W - logoRect.W) * 0.5);
                 logoRect.Y = (int)Math.Round((screenRect.H - logoRect.H) * 0.15);
