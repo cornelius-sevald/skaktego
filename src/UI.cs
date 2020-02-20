@@ -22,6 +22,7 @@ namespace skaktego
         private Font font;
         private Texture background;
         private Texture menuLogo;
+        private Texture menuBG;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
@@ -61,6 +62,7 @@ namespace skaktego
 
             background = new Texture(renderer, "background.png");
             menuLogo = new Texture(renderer, "skaktegoLogo.png");
+            menuBG = new Texture(renderer, "skaktegoMain.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
         }
@@ -178,6 +180,16 @@ namespace skaktego
 
                 mainMenuRect.X = (int)Math.Round((screenRect.W - mainMenuRect.W) * 0.5);
                 mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
+
+                Rect bgRect = new Rect(0, 0, 0, 0);
+                int bgW, bgH;
+                menuBG.Query(out bgW, out bgH);
+                bgRect.W = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgW);
+                bgRect.H = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgH);
+
+                bgRect.X = (screenRect.X - screenRect.X /2);
+                bgRect.Y = (screenRect.Y - screenRect.Y /2);
+                renderer.RenderTexture(menuBG, bgRect, null);
 
                 Rect logoRect = new Rect(0,0,0,0);
                 logoRect.W = 548;
