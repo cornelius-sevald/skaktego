@@ -36,7 +36,7 @@ namespace skaktego {
             }
             return legalMoves;
         }
-        
+
         //Finds the piece of the current tile, and then redirects to specific move checker
         public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
@@ -75,7 +75,7 @@ namespace skaktego {
 
         /// <summary>
         /// Advance an entire turn.
-        /// 
+        ///
         /// Currently does not implement castling or queening, and only checks
         /// for pseudo-legal moves.
         /// </summary>
@@ -167,7 +167,7 @@ namespace skaktego {
                             possibleMoves.Push(here);
                         }
                     }
-                }   
+                }
             }
 
             if (gameState.player == ChessColors.Black) {
@@ -181,7 +181,7 @@ namespace skaktego {
                             possibleMoves.Push(here);
                         }
                     }
-                }   
+                }
             }
 
             //checks PseudoLegal captures for the pawn
@@ -226,7 +226,7 @@ namespace skaktego {
                     }
                 }
             }
-            
+
             return new List<BoardPosition>(possibleMoves);
         }
 
@@ -265,7 +265,7 @@ namespace skaktego {
                     break;
                 }
             }
-            
+
             //checks PseudoLegal moves in the positive horizontal direction from the piece's position
             here = pos;
             while (true) {
@@ -359,7 +359,7 @@ namespace skaktego {
                     break;
                 }
             }
-            
+
             //checks PseudoLegal moves in the negative vertical and horizontal direction from the piece's position
             here = pos;
             while (true) {
@@ -471,11 +471,10 @@ namespace skaktego {
 
             //50 moves without capture or moving a pawn
             if(gameState.halfmoveClock >= 50) {
-                Console.WriteLine("for mange moves");
                 return true;
             }
 
-            //If there are only 2 kings 
+            //If there are only 2 kings
             int pieceCount = 0;
             for (int i = 0; i < gameState.board.Size; i++) {
                 for (int j = 0; j < gameState.board.Size; j++) {
@@ -485,17 +484,14 @@ namespace skaktego {
                 }
             }
             if (pieceCount <= 2) {
-                Console.WriteLine("for få brikker");
                 return true;
             }
 
             //if there are no legal moves for the current player
             List<BoardPosition> legalMoves = GetAllLegalMoves(gameState);
             if (legalMoves.Count == 0) {
-                Console.WriteLine("for få træk");
                 return true;
             }
-            Console.WriteLine("gode tider");
             return false;
         }
 
