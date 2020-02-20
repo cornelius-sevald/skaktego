@@ -19,7 +19,7 @@ namespace skaktego
             // Run the UI.
             while (!ui.quit)
             {
-                ui.Update(gameState);
+                ui.Update(ref gameState);
             }
 
             // Clean up

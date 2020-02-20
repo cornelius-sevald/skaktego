@@ -121,5 +121,9 @@ namespace skaktego {
         public override string ToString() {
             return ToChar().ToString();
         }
+
+        public void Promote(PieceTypes pieceType) {
+            Type = pieceType;
+        }
     }
 }

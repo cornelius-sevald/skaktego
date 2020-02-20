@@ -25,5 +25,18 @@ namespace skaktego {
                     throw new ArgumentException();
             }
         }
+
+        /// <summary>
+        /// Return the other color
+        /// </summary>
+        /// <returns></returns>
+        public static ChessColors Other(this ChessColors color) {
+            switch (color) {
+                case ChessColors.Black:
+                    return ChessColors.White;
+                default:
+                    return ChessColors.Black;
+            }
+        }
     }
 }
