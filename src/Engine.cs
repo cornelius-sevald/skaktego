@@ -6,6 +6,18 @@ namespace skaktego {
 
     public static class Engine{
 
+        //Takes the legal moves for all pieces
+        public static List<BoardPosition> GetAllLegalMoves(GameState gameState) {
+            List<BoardPosition> allMoves = new List<BoardPosition>();
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    List<BoardPosition> legalMoves = GetLegalMoves(gameState, new BoardPosition(i, j));
+                    allMoves = allMoves.Concat(legalMoves).ToList();
+                }
+            }
+            return allMoves;
+        }
+
         //Takes in the pseudo legal moves for the piece and checks if they are actually legal
         public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
@@ -13,10 +25,6 @@ namespace skaktego {
         }
 
         public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
-            // There are no PseudoLegal moves, if there is no piece or it is not the piece's colors turn
-            if (piece == null || piece.Color != gameState.player) {
-                return new List<BoardPosition>();
-            }
             List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
             List<BoardPosition> legalMoves = new List<BoardPosition>();
             foreach (BoardPosition move in moves) {
@@ -121,6 +129,11 @@ namespace skaktego {
                 newGameState.enPassant = new BoardPosition(from.column, (from.row + to.row) / 2);
             } else {
                 newGameState.enPassant = null;
+            }
+
+            //promote a pawn
+            if (piece.Type == PieceTypes.Pawn && (to.row == 0 || to.row == gameState.board.Size - 1)) {
+                piece.Promote(PieceTypes.Queen);
             }
 
             // Advance the game clocks.
@@ -451,6 +464,46 @@ namespace skaktego {
                 return false;
             }
             return IsTileAttacked(gameState, kingPos);
+        }
+
+        //checks if the game is a tie
+        public static bool IsTie(GameState gameState) {
+
+            //50 moves without capture or moving a pawn
+            if(gameState.halfmoveClock >= 50) {
+                Console.WriteLine("for mange moves");
+                return true;
+            }
+
+            //If there are only 2 kings 
+            int pieceCount = 0;
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    if (gameState.board.GetPiece(new BoardPosition(i, j)) != null) {
+                        pieceCount++;
+                    }
+                }
+            }
+            if (pieceCount <= 2) {
+                Console.WriteLine("for få brikker");
+                return true;
+            }
+
+            //if there are no legal moves for the current player
+            List<BoardPosition> legalMoves = GetAllLegalMoves(gameState);
+            if (legalMoves.Count == 0) {
+                Console.WriteLine("for få træk");
+                return true;
+            }
+            Console.WriteLine("gode tider");
+            return false;
+        }
+
+        public static bool IsCheckmate(GameState gameState) {
+            if (IsCheck(gameState) && IsTie(gameState)) {
+                return true;
+            }
+            return false;
         }
     }
 
