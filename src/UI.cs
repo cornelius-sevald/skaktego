@@ -111,7 +111,7 @@ namespace skaktego
                 {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
-                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value);
+                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value, true);
                     }
                     SelectTile(gameState, highlightedTile);
                 }
@@ -129,7 +129,7 @@ namespace skaktego
         private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
             selectedTile = highlightedTile;
             if (selectedTile.HasValue) {
-                legalMoves = Engine.GetPseudoLegalMoves(gameState, selectedTile.Value);
+                legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
             }
         }
 

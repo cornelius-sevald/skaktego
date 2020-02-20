@@ -6,6 +6,28 @@ namespace skaktego {
 
     public static class Engine{
 
+        //Takes in the pseudo legal moves for the piece and checks if they are actually legal
+        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos) {
+            Piece piece = gameState.board.GetPiece(pos);
+            return GetLegalMoves(gameState, pos, piece);
+        }
+
+        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
+            // There are no PseudoLegal moves, if there is no piece or it is not the piece's colors turn
+            if (piece == null || piece.Color != gameState.player) {
+                return new List<BoardPosition>();
+            }
+            List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
+            List<BoardPosition> legalMoves = new List<BoardPosition>();
+            foreach (BoardPosition move in moves) {
+                GameState tempState = ApplyMove(gameState, pos, move, false);
+                tempState.player = tempState.player.Other();
+                if (!IsCheck(tempState)) {
+                    legalMoves.Add(move);
+                }
+            }
+            return legalMoves;
+        }
         
         //Finds the piece of the current tile, and then redirects to specific move checker
         public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
@@ -56,23 +78,22 @@ namespace skaktego {
         /// before being applied?</param>
         /// <returns></returns>
         public static GameState ApplyMove(GameState gameState, BoardPosition from, BoardPosition to, bool strict=true) {
-            Piece piece = gameState.board.GetPiece(from);
+            var newGameState = GameState.FromString(gameState.ToString());
+            Piece piece = newGameState.board.GetPiece(from);
 
             if (strict) {
                 // The move is illegal if it is not the current player's turn
-                if (piece == null || piece.Color != gameState.player) {
-                    return gameState;
+                if (piece == null || piece.Color != newGameState.player) {
+                    return newGameState;
                 }
 
-                // TODO: Change to `legalMoves` when the method is implemented
-                List<BoardPosition> pseudoLegalMoves = GetPseudoLegalMoves(gameState, from, piece);
+                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, from, piece);
                 // If the move is not legal, do not apply it
-                if (!pseudoLegalMoves.Contains(to)) {
-                    return gameState;
+                if (!legalMoves.Contains(to)) {
+                    return newGameState;
                 }
             }
 
-            var newGameState = GameState.FromString(gameState.ToString());
             newGameState.board.SetPiece(null, from);
             Piece captured = newGameState.board.CapturePiece(to);
             newGameState.board.SetPiece(piece, to);
@@ -406,6 +427,35 @@ namespace skaktego {
                 }
             }
             return false;
+        }
+
+        public static bool IsCheck(GameState gameState) {
+            BoardPosition kingPos = new BoardPosition();
+            bool kingFound = false;
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    kingPos.column = i;
+                    kingPos.row = j;
+                    Piece piece = gameState.board.GetPiece(kingPos);
+                    if (piece != null && piece.Type == PieceTypes.King && piece.Color == gameState.player) {
+                        kingFound = true;
+                        break;
+                    }
+                }
+                if(kingFound) {
+                    break;
+                }
+            }
+            if (!kingFound) {
+                //throw new ChessException("No king found");
+                return false;
+            }
+            return IsTileAttacked(gameState, kingPos);
+        }
+    }
+
+    public class ChessException : Exception {
+        public ChessException(string message) : base(message) {
         }
     }
 }
