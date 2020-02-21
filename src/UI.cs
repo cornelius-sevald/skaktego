@@ -131,25 +131,31 @@ namespace skaktego
                 {
                     highlightedTile = null;
                 }
-                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP 
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
                 && e.button.button == SDL.SDL_BUTTON_LEFT))
                 {
                     // If a tile is already selected, attempt to apply the move
-                    if (selectedTile.HasValue && highlightedTile.HasValue) {
+                    if (selectedTile.HasValue && highlightedTile.HasValue)
+                    {
                         gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value, true);
-                        if (Engine.IsCheckmate(gameState)) {
+                        if (Engine.IsCheckmate(gameState))
+                        {
                             Console.WriteLine("der er checkmate bros - du vinder :)");
-                        } else if (Engine.IsTie(gameState)) {
+                        }
+                        else if (Engine.IsTie(gameState))
+                        {
                             Console.WriteLine("det står lige - du vinder ikke :(");
                         }
                     }
                     SelectTile(gameState, highlightedTile);
-                } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP 
-                && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
+                }
+                else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
+              && e.button.button == SDL.SDL_BUTTON_RIGHT))
+                {
                     selectedTile = null;
                     legalMoves = null;
                 }
-                Rect xButtonRect = new Rect(0,0,0,0);
+                Rect xButtonRect = new Rect(0, 0, 0, 0);
                 xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
                 xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
 
@@ -183,7 +189,9 @@ namespace skaktego
             if (selectedTile.HasValue)
             {
                 legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
-            } else {
+            }
+            else
+            {
                 legalMoves = null;
             }
         }
@@ -221,7 +229,7 @@ namespace skaktego
                 bgRect.Y = 0;
                 renderer.RenderTexture(menuBG, bgRect, null);
 
-                Rect logoRect = new Rect(0,0,0,0);
+                Rect logoRect = new Rect(0, 0, 0, 0);
                 int logoW, logoH;
                 menuLogo.Query(out logoW, out logoH);
                 logoRect.W = (int)((Math.Min(screenRect.H / (double)logoH, screenRect.W / (double)logoW) * logoW) * 0.4);
@@ -269,14 +277,14 @@ namespace skaktego
                 }
 
                 //Draw game button
-                Rect xButtonRect = new Rect(0,0,0,0);
+                Rect xButtonRect = new Rect(0, 0, 0, 0);
                 xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
                 xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
 
                 xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
                 xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
 
-                Rect xButtonRectOutline = new Rect(0,0,0,0);
+                Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
                 xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
                 xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
 
@@ -287,9 +295,9 @@ namespace skaktego
                 renderer.FillRect(xButtonRectOutline);
 
                 foreach (Button button in gameButtons)
-                    {
-                        button.Draw(renderer, xButtonRect);
-                    }
+                {
+                    button.Draw(renderer, xButtonRect);
+                }
                 renderer.SetColor(new Color(0Xff002277));
                 renderer.FillRect(xButtonRect);
 
@@ -436,6 +444,4 @@ namespace skaktego
             }
         }
     }
-
-
 }
