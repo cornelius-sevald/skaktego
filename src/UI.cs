@@ -126,8 +126,8 @@ namespace skaktego
                 {
                     highlightedTile = null;
                 }
-
-                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP))
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP 
+                && e.button.button == SDL.SDL_BUTTON_LEFT))
                 {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
@@ -139,6 +139,10 @@ namespace skaktego
                         }
                     }
                     SelectTile(gameState, highlightedTile);
+                } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP 
+                && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
+                    selectedTile = null;
+                    legalMoves = null;
                 }
             }
             else if (isGaming)
@@ -164,6 +168,8 @@ namespace skaktego
             if (selectedTile.HasValue)
             {
                 legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
+            } else {
+                legalMoves = null;
             }
         }
 
