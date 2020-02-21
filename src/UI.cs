@@ -9,8 +9,8 @@ namespace skaktego
     public sealed class UI
     {
         // Screen size
-        private const int SCREEN_WIDTH = 640;
-        private const int SCREEN_HEIGHT = 640;
+        private const int SCREEN_WIDTH = 800;
+        private const int SCREEN_HEIGHT = 450;
 
         private const string RESOURCE_PATH = "resources/";
 
@@ -21,6 +21,8 @@ namespace skaktego
         private Renderer renderer;
         private Font font;
         private Texture background;
+        private Texture menuLogo;
+        private Texture menuBG;
         private Texture pieceSprites;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
@@ -28,7 +30,9 @@ namespace skaktego
         private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
         private bool isMenuActive = false;
+        private bool isGaming = false;
         private Button[] buttons;
+        private Button[] menuButtons;
 
         public bool quit = false;
 
@@ -46,10 +50,19 @@ namespace skaktego
             events = new List<SDL.SDL_Event>();
 
             buttons = new Button[]{
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "ruth", font, () => Console.WriteLine("ruth"))
+                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => Console.WriteLine("Unimplemented")),
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, () => isGaming = false)
+            };
+
+            menuButtons = new Button[]{
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, () => {isGaming = true; isMenuActive = false;}),
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
             };
 
             background = new Texture(renderer, "background.png");
+            menuLogo = new Texture(renderer, "skaktegoLogo.png");
+            menuBG = new Texture(renderer, "skaktegoMain.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
         }
@@ -69,7 +82,7 @@ namespace skaktego
                 quit = true;
             }
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE))
+          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE && isGaming == true))
             {
                 isMenuActive = !isMenuActive;
             }
@@ -86,11 +99,18 @@ namespace skaktego
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
 
-            if (!isMenuActive)
-            {
-                int boardMouseX = (int)Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
-                int boardMouseY = -1 + gameState.board.Size - ((int)Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+            Rect mainMenuRect = new Rect(0, 0, 0, 0);
+            mainMenuRect.W = Math.Min(screenRect.H, screenRect.W);
+            mainMenuRect.H = Math.Min(screenRect.H, screenRect.W);
 
+            mainMenuRect.X = (int)Math.Round((screenRect.W - mainMenuRect.W) * 0.5);
+            mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
+
+            int boardMouseX = (int)Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
+            int boardMouseY = -1 + gameState.board.Size - ((int)Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+
+            if (!isMenuActive && isGaming)
+            {
                 if (0 <= boardMouseX && boardMouseX < gameState.board.Size)
                 {
                     if (0 <= boardMouseY && boardMouseY < gameState.board.Size)
@@ -111,25 +131,39 @@ namespace skaktego
                 {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
-                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value);
+                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value, true);
+                        if (Engine.IsCheckmate(gameState)) {
+                            Console.WriteLine("der er checkmate bros - du vinder :)");
+                        } else if (Engine.IsTie(gameState)) {
+                            Console.WriteLine("det står lige - du vinder ikke :(");
+                        }
                     }
                     SelectTile(gameState, highlightedTile);
                 }
             }
-            else
+            else if (isGaming)
             {
                 foreach (Button button in buttons)
                 {
                     button.Update(mouseX, mouseY, boardRect, events);
                 }
             }
+            else
+            {
+                foreach (Button button in menuButtons)
+                {
+                    button.Update(mouseX, mouseY, mainMenuRect, events);
+                }
+            }
             Draw(gameState);
         }
 
-        private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
+        private void SelectTile(GameState gameState, Nullable<BoardPosition> tile)
+        {
             selectedTile = highlightedTile;
-            if (selectedTile.HasValue) {
-                legalMoves = Engine.GetPseudoLegalMoves(gameState, selectedTile.Value);
+            if (selectedTile.HasValue)
+            {
+                legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
             }
         }
 
@@ -142,60 +176,109 @@ namespace skaktego
 
             // Set up screen geometry
             Rect screenRect = renderer.OutputRect();
-            Rect boardRect = new Rect(0, 0, 0, 0);
-            boardRect.W = Math.Min(screenRect.H, screenRect.W);
-            boardRect.H = Math.Min(screenRect.H, screenRect.W);
 
-            // Draw the board
-            boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
-            boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
-            DrawBoard(gameState.board, boardRect);
-
-            // Draw the higlighted, selected and legal tiles
-            if (highlightedTile != null)
+            // Draw main menu if not currently in game
+            if (!isGaming)
             {
-                HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile.Value);
-            }
-            if (selectedTile != null)
-            {
-                HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile.Value);
-            }
-            if (legalMoves != null) {
-                foreach (BoardPosition legalTile in legalMoves) {
-                    HighlightTile(new Color(0X11FF1155), gameState.board, boardRect, legalTile);
-                }
-            }
-
-            // Draw the menu, if it is active
-            if (isMenuActive)
-            {
-                // Draw a dark overlay
-                renderer.SetColor(new Color(0X00000077));
+                renderer.SetColor(new Color(0XdfedecFF));
                 renderer.FillRect(screenRect);
 
-                // Draw the menu rectangle
-                Rect menuRect1 = new Rect(0, 0, 11, 11);
-                Rect menuRect2 = new Rect(0, 0, 10, 10);
+                Rect mainMenuRect = new Rect(0, 0, 0, 0);
+                mainMenuRect.W = Math.Min(screenRect.H, screenRect.W);
+                mainMenuRect.H = Math.Min(screenRect.H, screenRect.W);
 
-                menuRect1.W = (int)Math.Round(boardRect.W * 0.41);
-                menuRect1.H = (int)Math.Round(boardRect.H * 0.51);
-                menuRect2.W = (int)Math.Round(boardRect.W * 0.4);
-                menuRect2.H = (int)Math.Round(boardRect.H * 0.5);
+                mainMenuRect.X = (int)Math.Round((screenRect.W - mainMenuRect.W) * 0.5);
+                mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
 
-                menuRect1.X = (int)Math.Round((screenRect.W - menuRect1.W) * 0.5);
-                menuRect1.Y = (int)Math.Round((screenRect.H - menuRect1.H) * 0.5);
-                menuRect2.X = (int)Math.Round((screenRect.W - menuRect2.W) * 0.5);
-                menuRect2.Y = (int)Math.Round((screenRect.H - menuRect2.H) * 0.5);
+                Rect bgRect = new Rect(0, 0, 0, 0);
+                int bgW, bgH;
+                menuBG.Query(out bgW, out bgH);
+                bgRect.W = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgW);
+                bgRect.H = (int)(Math.Max(screenRect.H / (double)bgH, screenRect.W / (double)bgW) * bgH);
 
-                renderer.SetColor(new Color(0XFFFFFFAA));
-                renderer.FillRect(menuRect1);
-                renderer.SetColor(new Color(0X000000DD));
-                renderer.FillRect(menuRect2);
+                bgRect.X = (screenRect.W - bgRect.W) / 2;
+                bgRect.Y = 0;
+                renderer.RenderTexture(menuBG, bgRect, null);
 
-                // Draw the buttons in the menu
-                foreach (Button button in buttons)
+                Rect logoRect = new Rect(0,0,0,0);
+                int logoW, logoH;
+                menuLogo.Query(out logoW, out logoH);
+                logoRect.W = (int)((Math.Min(screenRect.H / (double)logoH, screenRect.W / (double)logoW) * logoW) * 0.4);
+                logoRect.H = (int)((Math.Min(screenRect.H / (double)logoH, screenRect.W / (double)logoW) * logoH) * 0.4);
+
+                logoRect.X = (int)Math.Round((screenRect.W - logoRect.W) * 0.5);
+                logoRect.Y = (int)Math.Round((screenRect.H - logoRect.H) * 0.15);
+
+                renderer.RenderTexture(menuLogo, logoRect, null);
+
+                // Draw the buttons in the main menu
+                foreach (Button button in menuButtons)
                 {
-                    button.Draw(renderer, boardRect);
+                    button.Draw(renderer, mainMenuRect);
+                }
+
+            }
+            else
+            {
+                //Screen geometry only during gameplay
+                Rect boardRect = new Rect(0, 0, 0, 0);
+                boardRect.W = Math.Min(screenRect.H, screenRect.W);
+                boardRect.H = Math.Min(screenRect.H, screenRect.W);
+
+                // Draw the board
+                boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
+                boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
+                DrawBoard(gameState.board, boardRect);
+
+                // Draw the higlighted, selected and legal tiles
+                if (highlightedTile != null)
+                {
+                    HighlightTile(new Color(0XFFFF0055), gameState.board, boardRect, highlightedTile.Value);
+                }
+                if (selectedTile != null)
+                {
+                    HighlightTile(new Color(0X0000FF55), gameState.board, boardRect, selectedTile.Value);
+                }
+                if (legalMoves != null)
+                {
+                    foreach (BoardPosition legalTile in legalMoves)
+                    {
+                        HighlightTile(new Color(0X11FF1155), gameState.board, boardRect, legalTile);
+                    }
+                }
+
+
+                // Draw the in game menu, if it is active
+                if (isMenuActive)
+                {
+                    // Draw a dark overlay
+                    renderer.SetColor(new Color(0X00000077));
+                    renderer.FillRect(screenRect);
+
+                    // Draw the menu rectangle
+                    Rect menuRect1 = new Rect(0, 0, 11, 11);
+                    Rect menuRect2 = new Rect(0, 0, 10, 10);
+
+                    menuRect1.W = (int)Math.Round(boardRect.W * 0.41);
+                    menuRect1.H = (int)Math.Round(boardRect.H * 0.51);
+                    menuRect2.W = (int)Math.Round(boardRect.W * 0.4);
+                    menuRect2.H = (int)Math.Round(boardRect.H * 0.5);
+
+                    menuRect1.X = (int)Math.Round((screenRect.W - menuRect1.W) * 0.5);
+                    menuRect1.Y = (int)Math.Round((screenRect.H - menuRect1.H) * 0.5);
+                    menuRect2.X = (int)Math.Round((screenRect.W - menuRect2.W) * 0.5);
+                    menuRect2.Y = (int)Math.Round((screenRect.H - menuRect2.H) * 0.5);
+
+                    renderer.SetColor(new Color(0XFFFFFFAA));
+                    renderer.FillRect(menuRect1);
+                    renderer.SetColor(new Color(0X000000DD));
+                    renderer.FillRect(menuRect2);
+
+                    // Draw the buttons in the menu
+                    foreach (Button button in buttons)
+                    {
+                        button.Draw(renderer, boardRect);
+                    }
                 }
             }
 
@@ -286,7 +369,8 @@ namespace skaktego
             return clips;
         }
 
-        public void Quit () {
+        public void Quit()
+        {
             Graphics.QuitGraphics();
             instance = null;
         }

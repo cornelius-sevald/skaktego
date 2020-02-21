@@ -6,7 +6,37 @@ namespace skaktego {
 
     public static class Engine{
 
-        
+        //Takes the legal moves for all pieces
+        public static List<BoardPosition> GetAllLegalMoves(GameState gameState) {
+            List<BoardPosition> allMoves = new List<BoardPosition>();
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    List<BoardPosition> legalMoves = GetLegalMoves(gameState, new BoardPosition(i, j));
+                    allMoves = allMoves.Concat(legalMoves).ToList();
+                }
+            }
+            return allMoves;
+        }
+
+        //Takes in the pseudo legal moves for the piece and checks if they are actually legal
+        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos) {
+            Piece piece = gameState.board.GetPiece(pos);
+            return GetLegalMoves(gameState, pos, piece);
+        }
+
+        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
+            List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
+            List<BoardPosition> legalMoves = new List<BoardPosition>();
+            foreach (BoardPosition move in moves) {
+                GameState tempState = ApplyMove(gameState, pos, move, false);
+                tempState.player = tempState.player.Other();
+                if (!IsCheck(tempState)) {
+                    legalMoves.Add(move);
+                }
+            }
+            return legalMoves;
+        }
+
         //Finds the piece of the current tile, and then redirects to specific move checker
         public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
@@ -45,7 +75,7 @@ namespace skaktego {
 
         /// <summary>
         /// Advance an entire turn.
-        /// 
+        ///
         /// Currently does not implement castling or queening, and only checks
         /// for pseudo-legal moves.
         /// </summary>
@@ -56,23 +86,22 @@ namespace skaktego {
         /// before being applied?</param>
         /// <returns></returns>
         public static GameState ApplyMove(GameState gameState, BoardPosition from, BoardPosition to, bool strict=true) {
-            Piece piece = gameState.board.GetPiece(from);
+            var newGameState = GameState.FromString(gameState.ToString());
+            Piece piece = newGameState.board.GetPiece(from);
 
             if (strict) {
                 // The move is illegal if it is not the current player's turn
-                if (piece == null || piece.Color != gameState.player) {
-                    return gameState;
+                if (piece == null || piece.Color != newGameState.player) {
+                    return newGameState;
                 }
 
-                // TODO: Change to `legalMoves` when the method is implemented
-                List<BoardPosition> pseudoLegalMoves = GetPseudoLegalMoves(gameState, from, piece);
+                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, from, piece);
                 // If the move is not legal, do not apply it
-                if (!pseudoLegalMoves.Contains(to)) {
-                    return gameState;
+                if (!legalMoves.Contains(to)) {
+                    return newGameState;
                 }
             }
 
-            var newGameState = GameState.FromString(gameState.ToString());
             newGameState.board.SetPiece(null, from);
             Piece captured = newGameState.board.CapturePiece(to);
             newGameState.board.SetPiece(piece, to);
@@ -100,6 +129,11 @@ namespace skaktego {
                 newGameState.enPassant = new BoardPosition(from.column, (from.row + to.row) / 2);
             } else {
                 newGameState.enPassant = null;
+            }
+
+            //promote a pawn
+            if (piece.Type == PieceTypes.Pawn && (to.row == 0 || to.row == gameState.board.Size - 1)) {
+                piece.Promote(PieceTypes.Queen);
             }
 
             // Advance the game clocks.
@@ -133,7 +167,7 @@ namespace skaktego {
                             possibleMoves.Push(here);
                         }
                     }
-                }   
+                }
             }
 
             if (gameState.player == ChessColors.Black) {
@@ -147,7 +181,7 @@ namespace skaktego {
                             possibleMoves.Push(here);
                         }
                     }
-                }   
+                }
             }
 
             //checks PseudoLegal captures for the pawn
@@ -192,7 +226,7 @@ namespace skaktego {
                     }
                 }
             }
-            
+
             return new List<BoardPosition>(possibleMoves);
         }
 
@@ -231,7 +265,7 @@ namespace skaktego {
                     break;
                 }
             }
-            
+
             //checks PseudoLegal moves in the positive horizontal direction from the piece's position
             here = pos;
             while (true) {
@@ -325,7 +359,7 @@ namespace skaktego {
                     break;
                 }
             }
-            
+
             //checks PseudoLegal moves in the negative vertical and horizontal direction from the piece's position
             here = pos;
             while (true) {
@@ -406,6 +440,71 @@ namespace skaktego {
                 }
             }
             return false;
+        }
+
+        public static bool IsCheck(GameState gameState) {
+            BoardPosition kingPos = new BoardPosition();
+            bool kingFound = false;
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    kingPos.column = i;
+                    kingPos.row = j;
+                    Piece piece = gameState.board.GetPiece(kingPos);
+                    if (piece != null && piece.Type == PieceTypes.King && piece.Color == gameState.player) {
+                        kingFound = true;
+                        break;
+                    }
+                }
+                if(kingFound) {
+                    break;
+                }
+            }
+            if (!kingFound) {
+                //throw new ChessException("No king found");
+                return false;
+            }
+            return IsTileAttacked(gameState, kingPos);
+        }
+
+        //checks if the game is a tie
+        public static bool IsTie(GameState gameState) {
+
+            //50 moves without capture or moving a pawn
+            if(gameState.halfmoveClock >= 50) {
+                return true;
+            }
+
+            //If there are only 2 kings
+            int pieceCount = 0;
+            for (int i = 0; i < gameState.board.Size; i++) {
+                for (int j = 0; j < gameState.board.Size; j++) {
+                    if (gameState.board.GetPiece(new BoardPosition(i, j)) != null) {
+                        pieceCount++;
+                    }
+                }
+            }
+            if (pieceCount <= 2) {
+                return true;
+            }
+
+            //if there are no legal moves for the current player
+            List<BoardPosition> legalMoves = GetAllLegalMoves(gameState);
+            if (legalMoves.Count == 0) {
+                return true;
+            }
+            return false;
+        }
+
+        public static bool IsCheckmate(GameState gameState) {
+            if (IsCheck(gameState) && IsTie(gameState)) {
+                return true;
+            }
+            return false;
+        }
+    }
+
+    public class ChessException : Exception {
+        public ChessException(string message) : base(message) {
         }
     }
 }
