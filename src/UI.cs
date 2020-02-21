@@ -33,6 +33,7 @@ namespace skaktego
         private bool isGaming = false;
         private Button[] buttons;
         private Button[] menuButtons;
+        private Button[] gameButtons;
 
         public bool quit = false;
 
@@ -58,6 +59,10 @@ namespace skaktego
             menuButtons = new Button[]{
                 new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, () => {isGaming = true; isMenuActive = false;}),
                 new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
+            };
+
+            gameButtons = new Button[]{
+                new Button(0, 0, 1, 1, "X", font, () => isMenuActive = true)
             };
 
             background = new Texture(renderer, "background.png");
@@ -143,6 +148,16 @@ namespace skaktego
                 && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
                     selectedTile = null;
                     legalMoves = null;
+                }
+                Rect xButtonRect = new Rect(0,0,0,0);
+                xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+                xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+                xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+                xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+                foreach (Button button in gameButtons)
+                {
+                    button.Update(mouseX, mouseY, xButtonRect, events);
                 }
             }
             else if (isGaming)
@@ -252,6 +267,31 @@ namespace skaktego
                         HighlightTile(new Color(0X11FF1155), gameState.board, boardRect, legalTile);
                     }
                 }
+
+                //Draw game button
+                Rect xButtonRect = new Rect(0,0,0,0);
+                xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+                xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+                xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+                xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+
+                Rect xButtonRectOutline = new Rect(0,0,0,0);
+                xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
+                xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
+
+                xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+                xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+
+                renderer.SetColor(new Color(0XffBBBBBBFF));
+                renderer.FillRect(xButtonRectOutline);
+
+                foreach (Button button in gameButtons)
+                    {
+                        button.Draw(renderer, xButtonRect);
+                    }
+                renderer.SetColor(new Color(0Xff002277));
+                renderer.FillRect(xButtonRect);
 
 
                 // Draw the in game menu, if it is active
