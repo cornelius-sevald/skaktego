@@ -27,11 +27,12 @@ namespace skaktego {
         public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
             List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
             List<BoardPosition> legalMoves = new List<BoardPosition>();
-            foreach (BoardPosition move in moves) {
-                GameState tempState = ApplyMove(gameState, pos, move, false);
+            foreach (BoardPosition movePos in moves) {
+                ChessMove move = new ChessMove(pos, movePos);
+                GameState tempState = ApplyMove(gameState, move, false);
                 tempState.player = tempState.player.Other();
                 if (!IsCheck(tempState)) {
-                    legalMoves.Add(move);
+                    legalMoves.Add(movePos);
                 }
             }
             return legalMoves;
@@ -80,14 +81,13 @@ namespace skaktego {
         /// for pseudo-legal moves.
         /// </summary>
         /// <param name="gameState">The current game state</param>
-        /// <param name="from">The position to move the piece from</param>
-        /// <param name="to">The position to move the piece to</param>
+        /// <param name="move">The chess move to apply</param>
         /// <param name="strict">Should the moved be checked if it is legal
         /// before being applied?</param>
         /// <returns></returns>
-        public static GameState ApplyMove(GameState gameState, BoardPosition from, BoardPosition to, bool strict=true) {
+        public static GameState ApplyMove(GameState gameState, ChessMove move, bool strict=true) {
             var newGameState = GameState.FromString(gameState.ToString());
-            Piece piece = newGameState.board.GetPiece(from);
+            Piece piece = newGameState.board.GetPiece(move.from);
 
             if (strict) {
                 // The move is illegal if it is not the current player's turn
@@ -95,29 +95,29 @@ namespace skaktego {
                     return newGameState;
                 }
 
-                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, from, piece);
+                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, move.from, piece);
                 // If the move is not legal, do not apply it
-                if (!legalMoves.Contains(to)) {
+                if (!legalMoves.Contains(move.to)) {
                     return newGameState;
                 }
             }
 
-            newGameState.board.SetPiece(null, from);
-            Piece captured = newGameState.board.CapturePiece(to);
-            newGameState.board.SetPiece(piece, to);
+            newGameState.board.SetPiece(null, move.from);
+            Piece captured = newGameState.board.CapturePiece(move.to);
+            newGameState.board.SetPiece(piece, move.to);
             piece.hasMoved = true;
 
             // Check if a pawn is captured due to en passant
-            if (to == newGameState.enPassant) {
+            if (move.to == newGameState.enPassant) {
                 BoardPosition enPassantCapture;
-                enPassantCapture.column = to.column;
+                enPassantCapture.column = move.to.column;
 
                 switch (newGameState.player) {
                     case ChessColors.Black:
-                        enPassantCapture.row = to.row + 1;
+                        enPassantCapture.row = move.to.row + 1;
                         break;
                     default:
-                        enPassantCapture.row = to.row - 1;
+                        enPassantCapture.row = move.to.row - 1;
                         break;
                 }
 
@@ -125,14 +125,14 @@ namespace skaktego {
             }
 
             // Update en passant
-            if (piece.Type == PieceTypes.Pawn && Math.Abs(from.row - to.row) == 2) {
-                newGameState.enPassant = new BoardPosition(from.column, (from.row + to.row) / 2);
+            if (piece.Type == PieceTypes.Pawn && Math.Abs(move.from.row - move.to.row) == 2) {
+                newGameState.enPassant = new BoardPosition(move.from.column, (move.from.row + move.to.row) / 2);
             } else {
                 newGameState.enPassant = null;
             }
 
             //promote a pawn
-            if (piece.Type == PieceTypes.Pawn && (to.row == 0 || to.row == gameState.board.Size - 1)) {
+            if (piece.Type == PieceTypes.Pawn && (move.to.row == 0 || move.to.row == gameState.board.Size - 1)) {
                 piece.Promote(PieceTypes.Queen);
             }
 

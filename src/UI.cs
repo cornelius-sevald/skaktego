@@ -131,7 +131,8 @@ namespace skaktego
                 {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
-                        gameState = Engine.ApplyMove(gameState, selectedTile.Value, highlightedTile.Value, true);
+                        ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
+                        gameState = Engine.ApplyMove(gameState, move, true);
                         if (Engine.IsCheckmate(gameState)) {
                             Console.WriteLine("der er checkmate bros - du vinder :)");
                         } else if (Engine.IsTie(gameState)) {
