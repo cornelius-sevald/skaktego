@@ -1,11 +1,12 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Collections.Generic;
 using SDL2;
 
 namespace skaktego {
 
-    public sealed class UI {
+    public sealed class UI : IPlayer {
         // Screen size
         private const int SCREEN_WIDTH = 800;
         private const int SCREEN_HEIGHT = 450;
@@ -32,7 +33,11 @@ namespace skaktego {
         private bool isGaming = false;
         private Button[] buttons;
         private Button[] menuButtons;
+
+        private MVar<ChessMove> storedMove;
         private GameState gameState = null;
+        private Game game = null;
+        private Thread gameThread;
 
         public bool quit = false;
 
@@ -50,12 +55,12 @@ namespace skaktego {
 
             buttons = new Button[]{
                 new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => Console.WriteLine("Unimplemented")),
-                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, () => isGaming = false)
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => { StopGaming(); BeginGaming(); }),
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, StopGaming)
             };
 
             menuButtons = new Button[]{
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, () => {isGaming = true; isMenuActive = false;}),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, BeginGaming),
                 new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
             };
 
@@ -67,7 +72,31 @@ namespace skaktego {
         }
 
         public void GameStart(GameState gameState) {
-            this.gameState = GameState.FromString(gameState.ToString());
+            this.gameState = gameState;
+            isGaming = true;
+        }
+
+        public ChessMove GetMove(GameState gameState) {
+            this.gameState = gameState;
+            return storedMove.Var;
+        }
+
+        private void BeginGaming() {
+            storedMove = new MVar<ChessMove>();
+            isGaming = true;
+            isMenuActive = false;
+            game = new Game(this, this);
+            gameThread = new Thread(new ThreadStart(() => { gameState = game.PlayGame(); }));
+            gameThread.Start();
+        }
+
+        private void StopGaming() {
+            isGaming = false;
+            game.quit = true;
+            if (!storedMove.HasValue) {
+                storedMove.Var = new ChessMove();
+            }
+            gameThread.Join();
         }
 
         public void Update() {
@@ -84,19 +113,17 @@ namespace skaktego {
                 quit = true;
             }
 
-            if (isGaming) {
-                gameState = UpdateGame(gameState);
+            if (isGaming && gameState != null) {
+                UpdateGame();
             } else {
                 UpdateMainMenu();
             }
 
         }
 
-        private GameState UpdateGame(GameState gameState) {
+        private void UpdateGame() {
             int mouseX, mouseY;
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
-
-            GameState newGameState = gameState;
 
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
           e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)) {
@@ -132,18 +159,15 @@ namespace skaktego {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
                         ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
-                        newGameState = Engine.ApplyMove(gameState, move, true);
-                        if (Engine.IsCheckmate(newGameState)) {
-                            Console.WriteLine("der er checkmate bros - du vinder :)");
-                        } else if (Engine.IsTie(newGameState)) {
-                            Console.WriteLine("det står lige - du vinder ikke :(");
+                        if (storedMove.HasValue) {
+                            storedMove.TakeMVar(x => x);
                         }
+                        storedMove.Var = move;
                     }
-                    SelectTile(newGameState, highlightedTile);
+                    SelectTile(gameState, highlightedTile);
                 }
             }
-            DrawGame(newGameState);
-            return newGameState;
+            DrawGame(gameState);
         }
 
         private void UpdateMainMenu() {
