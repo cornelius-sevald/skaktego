@@ -32,6 +32,7 @@ namespace skaktego {
         private bool isGaming = false;
         private Button[] buttons;
         private Button[] menuButtons;
+        private GameState gameState = null;
 
         public bool quit = false;
 
@@ -65,7 +66,11 @@ namespace skaktego {
             pieceClips = UI.GetPieceClips(pieceSprites);
         }
 
-        public void Update(ref GameState gameState) {
+        public void GameStart(GameState gameState) {
+            this.gameState = GameState.FromString(gameState.ToString());
+        }
+
+        public void Update() {
             PollEvents();
 
             // Update screen rect
@@ -78,13 +83,25 @@ namespace skaktego {
             e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q)) {
                 quit = true;
             }
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE && isGaming == true)) {
-                isMenuActive = !isMenuActive;
+
+            if (isGaming) {
+                gameState = UpdateGame(gameState);
+            } else {
+                UpdateMainMenu();
             }
 
+        }
+
+        private GameState UpdateGame(GameState gameState) {
             int mouseX, mouseY;
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
+
+            GameState newGameState = gameState;
+
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)) {
+                isMenuActive = !isMenuActive;
+            }
 
             Rect boardRect = new Rect(0, 0, 0, 0);
             boardRect.W = Math.Min(screenRect.H, screenRect.W);
@@ -93,6 +110,47 @@ namespace skaktego {
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
 
+            int boardMouseX = (int)Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
+            int boardMouseY = -1 + gameState.board.Size - ((int)Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
+
+            if (isMenuActive) {
+                foreach (Button button in buttons) {
+                    button.Update(mouseX, mouseY, boardRect, events);
+                }
+            } else {
+                if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
+                    if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
+                        highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
+                    } else {
+                        highlightedTile = null;
+                    }
+                } else {
+                    highlightedTile = null;
+                }
+
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
+                    // If a tile is already selected, attempt to apply the move
+                    if (selectedTile.HasValue && highlightedTile.HasValue) {
+                        ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
+                        newGameState = Engine.ApplyMove(gameState, move, true);
+                        if (Engine.IsCheckmate(newGameState)) {
+                            Console.WriteLine("der er checkmate bros - du vinder :)");
+                        } else if (Engine.IsTie(newGameState)) {
+                            Console.WriteLine("det står lige - du vinder ikke :(");
+                        }
+                    }
+                    SelectTile(newGameState, highlightedTile);
+                }
+            }
+            DrawGame(newGameState);
+            return newGameState;
+        }
+
+        private void UpdateMainMenu() {
+            int mouseX, mouseY;
+            SDL.SDL_GetMouseState(out mouseX, out mouseY);
+
+
             Rect mainMenuRect = new Rect(0, 0, 0, 0);
             mainMenuRect.W = Math.Min(screenRect.H, screenRect.W);
             mainMenuRect.H = Math.Min(screenRect.H, screenRect.W);
@@ -100,47 +158,11 @@ namespace skaktego {
             mainMenuRect.X = (int)Math.Round((screenRect.W - mainMenuRect.W) * 0.5);
             mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
 
-            int boardMouseX = (int)Math.Floor((mouseX - boardRect.X) / (double)boardRect.W * gameState.board.Size);
-            int boardMouseY = -1 + gameState.board.Size - ((int)Math.Floor((mouseY - boardRect.Y) / (double)boardRect.H * gameState.board.Size));
-
-            if (isGaming) {
-                if (isMenuActive) {
-                    foreach (Button button in buttons) {
-                        button.Update(mouseX, mouseY, boardRect, events);
-                    }
-                } else {
-                    if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
-                        if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
-                            highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
-                        } else {
-                            highlightedTile = null;
-                        }
-                    } else {
-                        highlightedTile = null;
-                    }
-
-                    if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
-                        // If a tile is already selected, attempt to apply the move
-                        if (selectedTile.HasValue && highlightedTile.HasValue) {
-                            ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
-                            gameState = Engine.ApplyMove(gameState, move, true);
-                            if (Engine.IsCheckmate(gameState)) {
-                                Console.WriteLine("der er checkmate bros - du vinder :)");
-                            } else if (Engine.IsTie(gameState)) {
-                                Console.WriteLine("det står lige - du vinder ikke :(");
-                            }
-                        }
-                        SelectTile(gameState, highlightedTile);
-                    }
-                }
-                DrawGame(gameState);
-            } else {
-                foreach (Button button in menuButtons) {
-                    button.Update(mouseX, mouseY, mainMenuRect, events);
-                }
-                DrawMainMenu();
+            foreach (Button button in menuButtons) {
+                button.Update(mouseX, mouseY, mainMenuRect, events);
             }
 
+            DrawMainMenu();
         }
 
         private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {

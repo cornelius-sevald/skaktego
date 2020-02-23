@@ -2,24 +2,19 @@
 using System.IO;
 using System.Text;
 
-namespace skaktego
-{
-    class Program
-    {
+namespace skaktego {
+    class Program {
 
-        static int Main(string[] args)
-        {
+        static int Main(string[] args) {
             // Initialize
             const string stateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq - 0 1";
             var gameState = GameState.FromString(stateStr);
             UI ui = UI.Instance;
-
-            //Engine.GetLegalPawnMoves(gameState, new BoardPosition(4,5));
+            ui.GameStart(gameState);
 
             // Run the UI.
-            while (!ui.quit)
-            {
-                ui.Update(ref gameState);
+            while (!ui.quit) {
+                ui.Update();
             }
 
             // Clean up
