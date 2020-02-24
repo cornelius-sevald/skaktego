@@ -33,6 +33,7 @@ namespace skaktego {
         private bool isGaming = false;
         private Button[] buttons;
         private Button[] menuButtons;
+        private Button[] gameButtons;
 
         private MVar<ChessMove> storedMove;
         private GameState gameState = null;
@@ -62,6 +63,10 @@ namespace skaktego {
             menuButtons = new Button[]{
                 new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, BeginGaming),
                 new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
+            };
+
+            gameButtons = new Button[]{
+                new Button(0, 0, 1, 1, "X", font, () => isMenuActive = true)
             };
 
             background = new Texture(renderer, "background.png");
@@ -131,8 +136,12 @@ namespace skaktego {
             }
 
             Rect boardRect = new Rect(0, 0, 0, 0);
-            boardRect.W = Math.Min(screenRect.H, screenRect.W);
-            boardRect.H = Math.Min(screenRect.H, screenRect.W);
+            {
+                // Board size
+                int bs = gameState.board.Size;
+                boardRect.W = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
+                boardRect.H = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
+            }
 
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
@@ -145,6 +154,16 @@ namespace skaktego {
                     button.Update(mouseX, mouseY, boardRect, events);
                 }
             } else {
+                Rect xButtonRect = new Rect(0, 0, 0, 0);
+                xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+                xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+                xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+                xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+                foreach (Button button in gameButtons) {
+                    button.Update(mouseX, mouseY, xButtonRect, events);
+                }
+
                 if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
                     if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
                         highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
@@ -154,8 +173,8 @@ namespace skaktego {
                 } else {
                     highlightedTile = null;
                 }
-
-                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP)) {
+                if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
+                && e.button.button == SDL.SDL_BUTTON_LEFT)) {
                     // If a tile is already selected, attempt to apply the move
                     if (selectedTile.HasValue && highlightedTile.HasValue) {
                         ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
@@ -165,6 +184,10 @@ namespace skaktego {
                         storedMove.Var = move;
                     }
                     SelectTile(gameState, highlightedTile);
+                } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
+                && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
+                    selectedTile = null;
+                    legalMoves = null;
                 }
             }
             DrawGame(gameState);
@@ -193,6 +216,8 @@ namespace skaktego {
             selectedTile = highlightedTile;
             if (selectedTile.HasValue) {
                 legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
+            } else {
+                legalMoves = null;
             }
         }
 
@@ -204,8 +229,12 @@ namespace skaktego {
 
             //Screen geometry only during gameplay
             Rect boardRect = new Rect(0, 0, 0, 0);
-            boardRect.W = Math.Min(screenRect.H, screenRect.W);
-            boardRect.H = Math.Min(screenRect.H, screenRect.W);
+            {
+                // Board size
+                int bs = gameState.board.Size;
+                boardRect.W = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
+                boardRect.H = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
+            }
 
             // Draw the board
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
@@ -225,6 +254,30 @@ namespace skaktego {
                 }
             }
 
+
+            //Draw game button
+            Rect xButtonRect = new Rect(0, 0, 0, 0);
+            xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+            xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+            xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+            xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+
+            Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
+            xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
+            xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
+
+            xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+            xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+
+            renderer.SetColor(new Color(0XffBBBBBBFF));
+            renderer.FillRect(xButtonRectOutline);
+
+            foreach (Button button in gameButtons) {
+                button.Draw(renderer, xButtonRect);
+            }
+            renderer.SetColor(new Color(0Xff002277));
+            renderer.FillRect(xButtonRect);
 
             // Draw the in game menu, if it is active
             if (isMenuActive) {
@@ -391,6 +444,4 @@ namespace skaktego {
             }
         }
     }
-
-
 }
