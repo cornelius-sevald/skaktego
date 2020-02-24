@@ -429,6 +429,7 @@ namespace skaktego {
         }
 
         public void Quit() {
+            StopGaming();
             Graphics.QuitGraphics();
             instance = null;
         }
