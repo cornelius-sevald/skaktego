@@ -38,7 +38,7 @@ namespace skaktego {
                         break;
                 }
 
-                gameState = Engine.ApplyMove(gameState, move, true);
+                gameState = Engine.ApplyMove(gameState, move, false);
                 checkMate = Engine.IsCheckmate(gameState);
                 tie = Engine.IsTie(gameState);
             }

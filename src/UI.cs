@@ -30,6 +30,8 @@ namespace skaktego
         private Texture menuBG;
         private Texture pieceSprites;
         private Texture[] endTextTextures;
+        private Texture overlayText1;
+        private Texture overlayText2;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
         private Nullable<BoardPosition> selectedTile = null;
@@ -39,6 +41,7 @@ namespace skaktego
         private bool isMenuActive = false;
         private bool isGaming = false;
         private bool doneGaming = false;
+        private bool screenHidden = false;
         private Button[] buttons;
         private Button[] menuButtons;
         private Button[] gameButtons;
@@ -101,6 +104,13 @@ namespace skaktego
                     endTextTextures[i] = new Texture(renderer, textSurf);
                 }
             }
+
+            using (Surface textSurf = font.TextSurface("Next turn", Graphics.white)) {
+                overlayText1 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("Press any button to continiue", Graphics.white)) {
+                overlayText2 = new Texture(renderer, textSurf);
+            }
         }
 
         public void GameStart(GameState gameState)
@@ -113,6 +123,8 @@ namespace skaktego
         public ChessMove GetMove(GameState gameState)
         {
             this.gameState = gameState;
+            screenHidden = true;
+            DrawOverlay();
             return storedMove.Var;
         }
 
@@ -174,9 +186,17 @@ namespace skaktego
                 quit = true;
             }
 
-            if (isGaming && gameState != null)
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN || 
+            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)) {
+                screenHidden = false;
+            }
+
+
+            if (isGaming)
             {
-                UpdateGame();
+                if (gameState != null && !screenHidden) {
+                    UpdateGame();
+                }
             }
             else
             {
@@ -254,11 +274,19 @@ namespace skaktego
                         if (selectedTile.HasValue && highlightedTile.HasValue)
                         {
                             ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
-                            if (storedMove.HasValue)
-                            {
-                                storedMove.TakeMVar(x => x);
+                            bool isMoveLegal = false;
+                            foreach (BoardPosition legalPos in legalMoves) {
+                                if (move.to == legalPos) {
+                                    isMoveLegal = true;
+                                }
                             }
-                            storedMove.Var = move;
+                            if (isMoveLegal) {
+                                if (storedMove.HasValue)
+                                {
+                                    storedMove.TakeMVar(x => x);
+                                }
+                                storedMove.Var = move;
+                            }
                         }
                         SelectTile(gameState, highlightedTile);
                     }
@@ -385,6 +413,7 @@ namespace skaktego
             {
                 DrawGameMenu(boardRect);
             }
+
             renderer.Present();
         }
 
@@ -537,6 +566,28 @@ namespace skaktego
             {
                 button.Draw(renderer, screenRect);
             }
+        }
+
+        private void DrawOverlay() {
+            renderer.SetColor(new Color(0X000000FF));
+            renderer.FillRect(screenRect);
+
+            Rect overlayTextRect1 = new Rect(0, 0, 0, 0);
+            overlayTextRect1.W = (int)(screenRect.W - screenRect.W * 0.5);
+            overlayTextRect1.H = (int)(screenRect.H - screenRect.H * 0.75);
+            overlayTextRect1.X = (screenRect.W - overlayTextRect1.W) / 2;
+            overlayTextRect1.Y = (screenRect.H - overlayTextRect1.H) / 4;
+
+            Rect overlayTextRect2 = new Rect(0, 0, 0, 0);
+            overlayTextRect2.W = (int)(screenRect.W - screenRect.W * 0.5);
+            overlayTextRect2.H = (int)(screenRect.H - screenRect.H * 0.9);
+            overlayTextRect2.X = (int)((screenRect.W - overlayTextRect2.W) * 0.5);
+            overlayTextRect2.Y = (int)((screenRect.H - overlayTextRect2.H) * 0.6);
+
+            renderer.RenderTexture(overlayText1, overlayTextRect1, null);
+            renderer.RenderTexture(overlayText2, overlayTextRect2, null);
+
+            renderer.Present();
         }
 
         private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos)
