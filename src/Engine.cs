@@ -204,11 +204,14 @@ namespace skaktego {
                     return gameState;
                 }
             }
-
-            newGameState.board.SetPiece(null, move.from);
-            Piece captured = newGameState.board.CapturePiece(move.to);
-            newGameState.board.SetPiece(piece, move.to);
-            piece.hasMoved = true;
+            Piece captured = null;
+            
+            if (piece.Type != PieceTypes.King) {
+                newGameState.board.SetPiece(null, move.from);
+                captured = newGameState.board.CapturePiece(move.to);
+                newGameState.board.SetPiece(piece, move.to);
+                piece.hasMoved = true;
+            }
 
             // Check if a pawn is captured due to en passant
             if (move.to == newGameState.enPassant) {
@@ -239,6 +242,68 @@ namespace skaktego {
                 piece.Promote(PieceTypes.Queen);
             }
 
+            //make castling moves
+            if (piece.Type == PieceTypes.King) {
+                if (move.to == gameState.castling.whiteLeftRook && gameState.castling.whiteQueen) {
+                    if (move.from.column < gameState.castling.whiteLeftRook.column) {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.whiteLeftRook);
+                        newGameState.board.SetPiece(null, gameState.castling.whiteLeftRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
+                    } else {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.whiteLeftRook);
+                        newGameState.board.SetPiece(null, gameState.castling.whiteLeftRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
+                    }
+
+                } else if (move.to == gameState.castling.whiteRightRook && gameState.castling.whiteKing) {
+                    if (move.from.column < gameState.castling.whiteRightRook.column) {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.whiteRightRook);
+                        newGameState.board.SetPiece(null, gameState.castling.whiteRightRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
+                    } else {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.whiteRightRook);
+                        newGameState.board.SetPiece(null, gameState.castling.whiteRightRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
+                    }
+
+                } else if (move.to == gameState.castling.blackLeftRook && gameState.castling.blackQueen) {
+                    if (move.from.column < gameState.castling.blackLeftRook.column) {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.blackLeftRook);
+                        newGameState.board.SetPiece(null, gameState.castling.blackLeftRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
+                    } else {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.blackLeftRook);
+                        newGameState.board.SetPiece(null, gameState.castling.blackLeftRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
+                    }
+
+                } else if (move.to == gameState.castling.blackRightRook && gameState.castling.blackKing) {
+                    if (move.from.column < gameState.castling.blackRightRook.column) {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.blackRightRook);
+                        newGameState.board.SetPiece(null, gameState.castling.blackRightRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
+                    } else {
+                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        Piece rook = newGameState.board.GetPiece(gameState.castling.blackRightRook);
+                        newGameState.board.SetPiece(null, gameState.castling.blackRightRook);
+                        newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
+                    }
+
+                } else {
+                    newGameState.board.SetPiece(piece, move.to);
+                }
+                newGameState.board.SetPiece(null, move.from);
+                piece.hasMoved = true;
+            }
+
+            //remove option to castling if the king is moved
             if (piece.Type == PieceTypes.King) {
                 switch(newGameState.player) {
                     case ChessColors.Black:
@@ -254,6 +319,7 @@ namespace skaktego {
                 }
             }
 
+            //remove option to castling if the rook is moved
             if (piece.Type == PieceTypes.Rook) {
                 if (newGameState.player == ChessColors.White) {
                     if (move.from == newGameState.castling.whiteLeftRook) {
