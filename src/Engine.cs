@@ -67,6 +67,9 @@ namespace skaktego {
 
                 case PieceTypes.King:
                     return GetPseudoLegalKingMoves(gameState, pos);
+                
+                case PieceTypes.Unknown:
+                    return new List<BoardPosition>();
 
                 default:
                     throw new ArgumentException("Unknown piece type " + piece.Type);

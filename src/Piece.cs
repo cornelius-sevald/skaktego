@@ -4,12 +4,13 @@ namespace skaktego {
 
     public enum PieceTypes {
         King, Queen, Bishop,
-        Knight, Rook, Pawn
+        Knight, Rook, Pawn,
+        Unknown
     }
 
     public class Piece {
         public const int PIECE_COLOR_COUNT = 2;
-        public const int PIECE_TYPE_COUNT = 6;
+        public const int PIECE_TYPE_COUNT = 7;
 
         public ChessColors Color { get; private set; }
         public PieceTypes Type { get; private set; }
@@ -54,10 +55,11 @@ namespace skaktego {
                 case 'p':
                     type = PieceTypes.Pawn;
                     break;
+                case 'u':
+                    type = PieceTypes.Unknown;
+                    break;
                 default:
-                    // TODO: Throw an error instead.
-                    Console.WriteLine("Can't construct piece from character '{0}'.", c);
-                    return null;
+                    throw new ArgumentException("Can't construct piece from character '" + c + "'");
             }
 
             return new Piece(color, type);
@@ -87,7 +89,7 @@ namespace skaktego {
                 }
             }
 
-            char c = '\0';
+            char c;
             switch (Type) {
                 case PieceTypes.King:
                     c = 'k';
@@ -107,6 +109,11 @@ namespace skaktego {
                 case PieceTypes.Pawn:
                     c = 'p';
                     break;
+                case PieceTypes.Unknown:
+                    c = 'u';
+                    break;
+                default:
+                    throw new InvalidOperationException("Piece type " + Type + " not recognized.");
             }
 
             // TODO: Throw exception if c == '\0'.

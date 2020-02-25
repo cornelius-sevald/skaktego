@@ -79,6 +79,21 @@ namespace skaktego {
             this.fullmoveClock = fullmoveClock;
         }
 
+        /// <summary>
+        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces.
+        /// </summary>
+        /// <param name="obfPlayer">The player to hide the opponents pieces from</param>
+        public void Obfuscate(ChessColors obfPlayer) {
+            for (int i = 0; i < board.Size; i++) {
+                for (int j = 0; j < board.Size; j++) {
+                    var piece = board.GetPiece(new BoardPosition(i, j));
+                    if (piece != null && piece.Color != obfPlayer) {
+                        piece.Promote(PieceTypes.Unknown);
+                    }
+                }
+            }
+        }
+
         public static GameState FromString(string stateStr) {
             string[] splitStr = stateStr.Split(' ');
 
