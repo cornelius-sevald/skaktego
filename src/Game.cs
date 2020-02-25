@@ -3,7 +3,7 @@ using System;
 namespace skaktego {
 
     public class Game {
-        const string startStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq - 0 1";
+        const string startStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - 0 1";
 
         public IPlayer whitePlayer;
         public IPlayer blackPlayer;
@@ -41,6 +41,7 @@ namespace skaktego {
                 gameState = Engine.ApplyMove(gameState, move, true);
                 checkMate = Engine.IsCheckmate(gameState);
                 tie = Engine.IsTie(gameState);
+                Console.WriteLine(gameState.ToString());
             }
 
             if (quit) {

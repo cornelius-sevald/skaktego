@@ -24,7 +24,8 @@ namespace skaktego {
             return GetLegalMoves(gameState, pos, piece);
         }
 
-        public static List<BoardPosition> GetLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
+        public static List<BoardPosition> GetLegalMoves(GameState realState, BoardPosition pos, Piece piece) {
+            GameState gameState = GameState.FromString(realState.ToString());
             List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
             List<BoardPosition> legalMoves = new List<BoardPosition>();
             foreach (BoardPosition movePos in moves) {
@@ -35,6 +36,108 @@ namespace skaktego {
                     legalMoves.Add(movePos);
                 }
             }
+
+            if (piece != null && piece.Type == PieceTypes.King) {
+                bool whiteRightRookCastle = false;
+                bool whiteLeftRookCastle = false;
+                bool blackRightRookCastle = false;
+                bool blackLeftRookCastle = false;
+
+                if (gameState.player == ChessColors.White && !IsCheck(gameState)) {
+                    if (gameState.castling.whiteKing && pos.row == gameState.castling.whiteRightRook.row) {
+                        BoardPosition here = pos;
+                        whiteRightRookCastle = true;
+                        for (int i = 0; i < Math.Abs(gameState.castling.whiteRightRook.column - pos.column); i++) {
+                            if (pos.column < gameState.castling.whiteRightRook.column) {
+                                here.column++;
+                            } else {
+                                here.column--;
+                            }
+                            if (IsTileAttacked(gameState, here) && i < 2) {
+                                whiteRightRookCastle = false;
+                                break;
+                            }
+                            if (gameState.board.IsTileOccupied(here) && here != gameState.castling.whiteRightRook) {
+                                whiteRightRookCastle = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (gameState.castling.whiteQueen && pos.row == gameState.castling.whiteLeftRook.row) {
+                        BoardPosition here = pos;
+                        whiteLeftRookCastle = true;
+                        for (int i = 0; i < Math.Abs(gameState.castling.whiteLeftRook.column - pos.column); i++) {
+                            if (pos.column < gameState.castling.whiteLeftRook.column) {
+                                here.column++;
+                            } else {
+                                here.column--;
+                            }
+                            if (IsTileAttacked(gameState, here) && i < 2) {
+                                whiteLeftRookCastle = false;
+                                break;
+                            }
+                            if (gameState.board.IsTileOccupied(here) && here != gameState.castling.whiteLeftRook) {
+                                whiteLeftRookCastle = false;
+                                break;
+                            }
+                        }
+                    }
+                } else if (gameState.player == ChessColors.Black && !IsCheck(gameState)) {
+                    if (gameState.castling.blackKing && pos.row == gameState.castling.blackRightRook.row) {
+                        BoardPosition here = pos;
+                        blackRightRookCastle = true;
+                        for (int i = 0; i < Math.Abs(gameState.castling.blackRightRook.column - pos.column); i++) {
+                            if (pos.column < gameState.castling.blackRightRook.column) {
+                                here.column++;
+                            } else {
+                                here.column--;
+                            }
+                            if (IsTileAttacked(gameState, here) && i < 2) {
+                                blackRightRookCastle = false;
+                                break;
+                            }
+                            if (gameState.board.IsTileOccupied(here) && here != gameState.castling.blackRightRook) {
+                                blackRightRookCastle = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (gameState.castling.blackQueen && pos.row == gameState.castling.blackLeftRook.row) {
+                        BoardPosition here = pos;
+                        blackLeftRookCastle = true;
+                        for (int i = 0; i < Math.Abs(gameState.castling.blackLeftRook.column - pos.column); i++) {
+                            if (pos.column < gameState.castling.blackLeftRook.column) {
+                                here.column++;
+                            } else {
+                                here.column--;
+                            }
+                            if (IsTileAttacked(gameState, here) && i < 2) {
+                                blackLeftRookCastle = false;
+                                break;
+                            }
+                            if (gameState.board.IsTileOccupied(here) && here != gameState.castling.blackLeftRook) {
+                                blackLeftRookCastle = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (whiteRightRookCastle) {
+                    legalMoves.Add(gameState.castling.whiteRightRook);
+                }
+                if (whiteLeftRookCastle) {
+                    legalMoves.Add(gameState.castling.whiteLeftRook);
+                }
+                if (blackRightRookCastle) {
+                    legalMoves.Add(gameState.castling.blackRightRook);
+                }
+                if (blackLeftRookCastle) {
+                    legalMoves.Add(gameState.castling.blackLeftRook);
+                }
+            }
+
             return legalMoves;
         }
 
@@ -92,13 +195,13 @@ namespace skaktego {
             if (strict) {
                 // The move is illegal if it is not the current player's turn
                 if (piece == null || piece.Color != newGameState.player) {
-                    return newGameState;
+                    return gameState;
                 }
 
                 List<BoardPosition> legalMoves = GetLegalMoves(newGameState, move.from, piece);
                 // If the move is not legal, do not apply it
                 if (!legalMoves.Contains(move.to)) {
-                    return newGameState;
+                    return gameState;
                 }
             }
 
@@ -134,6 +237,40 @@ namespace skaktego {
             //promote a pawn
             if (piece.Type == PieceTypes.Pawn && (move.to.row == 0 || move.to.row == gameState.board.Size - 1)) {
                 piece.Promote(PieceTypes.Queen);
+            }
+
+            if (piece.Type == PieceTypes.King) {
+                switch(newGameState.player) {
+                    case ChessColors.Black:
+                        newGameState.castling.blackKing = false;
+                        newGameState.castling.blackQueen = false;
+                        break;
+
+                    default:
+                        newGameState.castling.whiteKing = false;
+                        newGameState.castling.whiteQueen = false;
+                        break;
+                    
+                }
+            }
+
+            if (piece.Type == PieceTypes.Rook) {
+                if (newGameState.player == ChessColors.White) {
+                    if (move.from == newGameState.castling.whiteLeftRook) {
+                        newGameState.castling.whiteQueen = false;
+                    }
+                    if (move.from == newGameState.castling.whiteRightRook) {
+                        newGameState.castling.whiteKing = false;
+                    }
+                }
+                if (newGameState.player == ChessColors.Black) {
+                    if (move.from == newGameState.castling.blackLeftRook) {
+                        newGameState.castling.blackQueen = false;
+                    }
+                    if (move.from == newGameState.castling.blackRightRook) {
+                        newGameState.castling.blackKing = false;
+                    }
+                }
             }
 
             // Advance the game clocks.
@@ -410,7 +547,7 @@ namespace skaktego {
 
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //The king can have a maximum of 8 possible moves
+            //The king can have a maximum of 8 possible moves without castling
             BoardPosition here = pos;
             for (int i = 1; i < 9; i++) {
                 here = pos;
@@ -442,7 +579,8 @@ namespace skaktego {
             return false;
         }
 
-        public static bool IsCheck(GameState gameState) {
+        public static bool IsCheck(GameState realState) {
+            GameState gameState = GameState.FromString(realState.ToString());
             BoardPosition kingPos = new BoardPosition();
             bool kingFound = false;
             for (int i = 0; i < gameState.board.Size; i++) {
@@ -467,7 +605,8 @@ namespace skaktego {
         }
 
         //checks if the game is a tie
-        public static bool IsTie(GameState gameState) {
+        public static bool IsTie(GameState realState) {
+            GameState gameState = GameState.FromString(realState.ToString());
 
             //50 moves without capture or moving a pawn
             if(gameState.halfmoveClock >= 50) {
@@ -502,6 +641,7 @@ namespace skaktego {
             return false;
         }
     }
+
 
     public class ChessException : Exception {
         public ChessException(string message) : base(message) {
