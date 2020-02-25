@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using SDL2;
 
 namespace skaktego {
+    public enum GameResults {
+        WhiteWin, BlackWin, Tie, StillGaming
+    }
 
     public sealed class UI : IPlayer {
         // Screen size
@@ -23,6 +26,7 @@ namespace skaktego {
         private Texture menuLogo;
         private Texture menuBG;
         private Texture pieceSprites;
+        private Texture[] endTextTextures;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
         private Nullable<BoardPosition> selectedTile = null;
@@ -31,9 +35,12 @@ namespace skaktego {
         private Rect screenRect = null;
         private bool isMenuActive = false;
         private bool isGaming = false;
+        private bool doneGaming = false;
         private Button[] buttons;
         private Button[] menuButtons;
         private Button[] gameButtons;
+        private Button[] endButtons;
+        private GameResults gameResult = GameResults.StillGaming;
 
         private MVar<ChessMove> storedMove;
         private GameState gameState = null;
@@ -69,16 +76,31 @@ namespace skaktego {
                 new Button(0, 0, 1, 1, "X", font, () => isMenuActive = true)
             };
 
+            endButtons = new Button[]{
+                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Rematch", font, () => { StopGaming(); BeginGaming(); }),
+                new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Main Menu", font, StopGaming)
+            };
+
             background = new Texture(renderer, "background.png");
             menuLogo = new Texture(renderer, "skaktegoLogo.png");
             menuBG = new Texture(renderer, "skaktegoMain.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
+
+            Color[] endColors = new Color[] {Graphics.white, Graphics.black, Graphics.gray};
+            string[] endTexts = new string[] { "White Wins", "Black Wins", "   Tie   "};
+            endTextTextures = new Texture[3];
+            for (int i = 0; i < endTexts.Length; i++) {
+                using (Surface textSurf = font.TextSurface(endTexts[i], endColors[i])) {
+                    endTextTextures[i] = new Texture(renderer, textSurf);
+                }
+            }
         }
 
         public void GameStart(GameState gameState) {
             this.gameState = gameState;
             isGaming = true;
+            doneGaming = false;          
         }
 
         public ChessMove GetMove(GameState gameState) {
@@ -89,9 +111,21 @@ namespace skaktego {
         private void BeginGaming() {
             storedMove = new MVar<ChessMove>();
             isGaming = true;
+            gameResult = GameResults.StillGaming;
             isMenuActive = false;
             game = new Game(this, this);
-            gameThread = new Thread(new ThreadStart(() => { gameState = game.PlayGame(); }));
+            gameThread = new Thread(new ThreadStart(() => { 
+                gameState = game.PlayGame();
+                if (Engine.IsCheckmate(gameState)) {
+                    if (gameState.player == ChessColors.White) {
+                        gameResult = GameResults.BlackWin;
+                    } else {
+                        gameResult = GameResults.WhiteWin;
+                    }
+                } else if (Engine.IsTie(gameState)) {
+                    gameResult = GameResults.Tie;
+                }
+            }));
             gameThread.Start();
         }
 
@@ -164,7 +198,8 @@ namespace skaktego {
                     button.Update(mouseX, mouseY, xButtonRect, events);
                 }
 
-                if (0 <= boardMouseX && boardMouseX < gameState.board.Size) {
+                if (!doneGaming) {  
+                if (0 <= boardMouseX && boardMouseX < gameState.board.Size ) {
                     if (0 <= boardMouseY && boardMouseY < gameState.board.Size) {
                         highlightedTile = new BoardPosition(boardMouseX, boardMouseY);
                     } else {
@@ -188,6 +223,12 @@ namespace skaktego {
                 && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
                     selectedTile = null;
                     legalMoves = null;
+                }
+                }
+                if (doneGaming) {
+                    foreach (Button button in endButtons) {
+                        button.Update(mouseX, mouseY, screenRect, events);
+                    }
                 }
             }
             DrawGame(gameState);
@@ -278,6 +319,8 @@ namespace skaktego {
             }
             renderer.SetColor(new Color(0Xff002277));
             renderer.FillRect(xButtonRect);
+
+            DrawEndScreen(screenRect);
 
             // Draw the in game menu, if it is active
             if (isMenuActive) {
@@ -388,6 +431,40 @@ namespace skaktego {
         private void DrawPiece(Piece piece, Rect dst) {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void DrawEndScreen(Rect dst) {
+            if (gameResult == GameResults.StillGaming) {
+                return;
+            }
+
+            doneGaming = true;
+            highlightedTile = null;
+            selectedTile = null;
+
+            Rect endOverlayRect = new Rect(0, 0, 0, 0);
+            endOverlayRect.W = dst.W - dst.W / 6;
+            endOverlayRect.H = dst.H - dst.H / 6;
+            endOverlayRect.X = (dst.W - endOverlayRect.W) / 2;
+            endOverlayRect.Y = (dst.H - endOverlayRect.H) / 2;
+
+            Rect endTextRect = new Rect(0, 0, 0, 0);
+            endTextRect.W = (int)(dst.W - dst.W * 0.5);
+            endTextRect.H = (int)(dst.H - dst.H * 0.75);
+            endTextRect.X = (dst.W - endTextRect.W) / 2;
+            endTextRect.Y = (dst.H - endTextRect.H) / 4;
+
+            renderer.SetColor(new Color(0X00000077));
+            renderer.FillRect(screenRect);
+            renderer.SetColor(new Color(0X55555577));
+            renderer.FillRect(endOverlayRect);
+
+            Texture textTexture = endTextTextures[(int)gameResult];
+            renderer.RenderTexture(textTexture, endTextRect, null);
+
+            foreach (Button button in endButtons) {
+                button.Draw(renderer, screenRect);
+            }
         }
 
         private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos) {

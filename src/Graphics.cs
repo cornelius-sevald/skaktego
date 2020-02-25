@@ -8,6 +8,7 @@ namespace skaktego {
         public const string RESOURCE_PATH = "resources/";
 
         public static Color white = new Color(0xFFFFFFFF);
+        public static Color gray  = new Color(0x888888FF);
         public static Color black = new Color(0x000000FF);
 
         public static void InitGraphics() {
