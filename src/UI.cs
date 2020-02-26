@@ -36,6 +36,8 @@ namespace skaktego {
         private bool isGaming = false;
         private bool doneGaming = false;
         private bool screenHidden = false;
+        //Has the user already pressed something this frame
+        private bool pressedSomething = false;
         private ChessColors lastPlayer = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
@@ -163,6 +165,9 @@ namespace skaktego {
             // Update screen rect
             screenRect = renderer.OutputRect();
 
+            //Reset if the user has already pressed a button this frame
+            pressedSomething = false;
+
             // Check if the user wants to quit.
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
                 quit = true;
@@ -184,9 +189,10 @@ namespace skaktego {
 
         private void UpdateGame() {
             // If the user presses a button, unhide the screen
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN ||
-            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)) {
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYUP ||
+            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP) && screenHidden) {
                 screenHidden = false;
+                pressedSomething = true;
             }
 
 
@@ -214,7 +220,10 @@ namespace skaktego {
 
             if (isMenuActive) {
                 foreach (Button button in buttons) {
-                    button.Update(mouseX, mouseY, boardRect, events);
+                    if (pressedSomething) {
+                        break;
+                    }
+                    pressedSomething |= button.Update(mouseX, mouseY, boardRect, events);
                 }
             } else if (!screenHidden) {
                 Rect xButtonRect = new Rect(0, 0, 0, 0);
@@ -224,7 +233,10 @@ namespace skaktego {
                 xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
                 xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
                 foreach (Button button in gameButtons) {
-                    button.Update(mouseX, mouseY, xButtonRect, events);
+                    if (pressedSomething) {
+                        break;
+                    }
+                    pressedSomething |= button.Update(mouseX, mouseY, xButtonRect, events);
                 }
 
                 if (!doneGaming) {
@@ -238,7 +250,8 @@ namespace skaktego {
                         highlightedTile = null;
                     }
                     if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
-                    && e.button.button == SDL.SDL_BUTTON_LEFT)) {
+                    && e.button.button == SDL.SDL_BUTTON_LEFT) && !pressedSomething) {
+                        pressedSomething = true;
                         // If a tile is already selected, attempt to apply the move
                         if (selectedTile.HasValue && highlightedTile.HasValue) {
                             ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
@@ -267,7 +280,10 @@ namespace skaktego {
                 }
                 if (doneGaming) {
                     foreach (Button button in endButtons) {
-                        button.Update(mouseX, mouseY, screenRect, events);
+                        if (pressedSomething) {
+                            break;
+                        }
+                        pressedSomething |= button.Update(mouseX, mouseY, screenRect, events);
                     }
                 }
             }
@@ -287,7 +303,10 @@ namespace skaktego {
             mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
 
             foreach (Button button in menuButtons) {
-                button.Update(mouseX, mouseY, mainMenuRect, events);
+                if (pressedSomething) {
+                    break;
+                }
+                pressedSomething |= button.Update(mouseX, mouseY, mainMenuRect, events);
             }
 
             DrawMainMenu();

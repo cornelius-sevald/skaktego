@@ -28,7 +28,9 @@ namespace skaktego {
             State = ButtonStates.Mouseable;
         }
 
-        public void Update(int mouseX, int mouseY, Rect panelRect, List<SDL.SDL_Event> events){
+        public bool Update(int mouseX, int mouseY, Rect panelRect, List<SDL.SDL_Event> events){
+
+            bool hasPressed = false;
 
             double _mouseX = (mouseX - panelRect.X) / (double)panelRect.W;
             double _mouseY = (mouseY - panelRect.Y) / (double)panelRect.H;
@@ -50,8 +52,10 @@ namespace skaktego {
             }
             if (State == ButtonStates.Pressed && mouseUp) {
                 action();
+                hasPressed = true;
                 State = ButtonStates.Moused;
             }
+            return hasPressed;
         }
         public void Draw(Renderer renderer, Rect dst) {
             Rect buttonRect = new Rect((int)Math.Round(x * dst.W + dst.X),(int)Math.Round(y * dst.H + dst.Y),
