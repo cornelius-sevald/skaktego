@@ -10,20 +10,30 @@ namespace skaktego {
         public bool blackKing;
         public bool blackQueen;
 
+        public BoardPosition whiteLeftRook;
+        public BoardPosition whiteRightRook;
+        public BoardPosition blackLeftRook;
+        public BoardPosition blackRightRook;
+
         public static CastlingInfo FromString(string s) {
             CastlingInfo info = new CastlingInfo();
-            if (s.Contains('K')) {
+            string[] sArr = s.Split(':');
+            if (sArr[0].Contains('K')) {
                 info.whiteKing = true;
             }
-            if (s.Contains('Q')) {
+            if (sArr[0].Contains('Q')) {
                 info.whiteQueen = true;
             }
-            if (s.Contains('k')) {
+            if (sArr[0].Contains('k')) {
                 info.blackKing = true;
             }
-            if (s.Contains('q')) {
+            if (sArr[0].Contains('q')) {
                 info.blackQueen = true;
             }
+            info.whiteLeftRook = BoardPosition.FromString(sArr[1]);
+            info.whiteRightRook = BoardPosition.FromString(sArr[2]);
+            info.blackLeftRook = BoardPosition.FromString(sArr[3]);
+            info.blackRightRook = BoardPosition.FromString(sArr[4]);
             return info;
         }
 
@@ -45,6 +55,15 @@ namespace skaktego {
             if (strInfo.Length == 0) {
                 strInfo.Append('-');
             }
+            strInfo.Append(':');
+            strInfo.Append(whiteLeftRook.ToString());
+            strInfo.Append(':');
+            strInfo.Append(whiteRightRook.ToString());
+            strInfo.Append(':');
+            strInfo.Append(blackLeftRook.ToString());
+            strInfo.Append(':');
+            strInfo.Append(blackRightRook.ToString());
+
             return strInfo.ToString();
         }
     }
@@ -77,6 +96,21 @@ namespace skaktego {
             this.enPassant = enPassant;
             this.halfmoveClock = halfmoveClock;
             this.fullmoveClock = fullmoveClock;
+        }
+
+        /// <summary>
+        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces.
+        /// </summary>
+        /// <param name="obfPlayer">The player to hide the opponents pieces from</param>
+        public void Obfuscate(ChessColors obfPlayer) {
+            for (int i = 0; i < board.Size; i++) {
+                for (int j = 0; j < board.Size; j++) {
+                    var piece = board.GetPiece(new BoardPosition(i, j));
+                    if (piece != null && piece.Color != obfPlayer) {
+                        piece.Promote(PieceTypes.Unknown);
+                    }
+                }
+            }
         }
 
         public static GameState FromString(string stateStr) {
