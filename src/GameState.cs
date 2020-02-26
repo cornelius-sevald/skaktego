@@ -4,6 +4,17 @@ using System.Text;
 
 namespace skaktego {
 
+    /// <summary>
+    /// The three different game types:
+    ///  - Normal chess
+    ///  - Skaktego chess
+    ///  - Skakteo chess in the preparation phase
+    /// </summary>
+    public enum GameTypes {
+        Normal, Skaktego, SkaktegoPrep
+    }
+
+
     public struct CastlingInfo {
         public bool whiteKing;
         public bool whiteQueen;
@@ -76,6 +87,7 @@ namespace skaktego {
         public Nullable<ChessColors> kingTaken = null;
         public int halfmoveClock = 0;
         public int fullmoveClock = 1;
+        public GameTypes gameType;
 
         public GameState(Board board) {
             this.board = board;
@@ -87,10 +99,12 @@ namespace skaktego {
                 blackQueen = true
             };
             enPassant = null;
+            gameType = GameTypes.Normal;
         }
 
         public GameState(Board board, ChessColors player, CastlingInfo castling,
-        Nullable<BoardPosition> enPassant, Nullable<ChessColors> kingTaken, int halfmoveClock, int fullmoveClock) {
+        Nullable<BoardPosition> enPassant, Nullable<ChessColors> kingTaken,
+        int halfmoveClock, int fullmoveClock, GameTypes gameType) {
             this.board = board;
             this.player = player;
             this.castling = castling;
@@ -98,6 +112,7 @@ namespace skaktego {
             this.kingTaken = kingTaken;
             this.halfmoveClock = halfmoveClock;
             this.fullmoveClock = fullmoveClock;
+            this.gameType = gameType;
         }
 
         /// <summary>
@@ -147,8 +162,24 @@ namespace skaktego {
             int halfmoveClock = int.Parse(splitStr[5]);
             int fullmoveClock = int.Parse(splitStr[6]);
 
+            GameTypes gameType;
+            switch (splitStr[7]) {
+                case "s":
+                    gameType = GameTypes.Normal;
+                    break;
+                case "st":
+                    gameType = GameTypes.Skaktego;
+                    break;
+                case "stp":
+                    gameType = GameTypes.SkaktegoPrep;
+                    break;
+                default:
+                    throw new ArgumentException("'" + splitStr[7] + "' is not a valid string");
+            }
+
             return new GameState(board, player, castling,
-            enPassant, kingTaken, halfmoveClock, fullmoveClock);
+            enPassant, kingTaken, halfmoveClock,
+            fullmoveClock, gameType);
         }
 
         public override string ToString() {
@@ -163,9 +194,22 @@ namespace skaktego {
                 kingTakenStr = "-";
             }
             string halfmoveClockStr = halfmoveClock.ToString(); string fullmoveClockStr = fullmoveClock.ToString();
+            string gameTypeStr;
+            switch (gameType) {
+                case GameTypes.Skaktego:
+                    gameTypeStr = "st";
+                    break;
+                case GameTypes.SkaktegoPrep:
+                    gameTypeStr = "stp";
+                    break;
+                default:
+                    gameTypeStr = "s";
+                    break;
+            }
            
             return string.Join(' ', boardStr, playerStr, castlingStr,
-            enPassantStr, kingTakenStr, halfmoveClockStr, fullmoveClockStr);
+            enPassantStr, kingTakenStr, halfmoveClockStr,
+            fullmoveClockStr, gameTypeStr);
         }
     }
 

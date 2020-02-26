@@ -7,7 +7,7 @@ namespace skaktego {
     }
 
     public class Game {
-        const string startStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1";
+        const string startStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 st";
 
         public IPlayer whitePlayer;
         public IPlayer blackPlayer;

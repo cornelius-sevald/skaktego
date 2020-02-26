@@ -110,6 +110,7 @@ namespace skaktego {
         }
 
         public void GameStart(GameState gameState) {
+            Console.WriteLine(gameState.gameType);
             if (!isGaming) {
                 this.gameState = gameState;
             }
