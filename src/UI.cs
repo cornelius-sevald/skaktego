@@ -42,6 +42,7 @@ namespace skaktego
         private bool isGaming = false;
         private bool doneGaming = false;
         private bool screenHidden = false;
+        private ChessColors lastPlayer = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
         private Button[] gameButtons;
@@ -127,8 +128,6 @@ namespace skaktego
         public ChessMove GetMove(GameState gameState)
         {
             this.gameState = gameState;
-            screenHidden = true;
-            DrawOverlay();
             return storedMove.Var;
         }
 
@@ -179,6 +178,12 @@ namespace skaktego
         {
             PollEvents();
 
+            // When the player switches, hide the screen
+            if (gameState != null && gameState.player != lastPlayer) {
+                screenHidden = true;
+                lastPlayer = gameState.player;
+            }
+
             // Update screen rect
             screenRect = renderer.OutputRect();
 
@@ -193,15 +198,10 @@ namespace skaktego
                 quit = true;
             }
 
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN || 
-            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)) {
-                screenHidden = false;
-            }
-
 
             if (isGaming)
             {
-                if (gameState != null && !screenHidden) {
+                if (gameState != null) {
                     UpdateGame();
                 }
             }
@@ -214,6 +214,13 @@ namespace skaktego
 
         private void UpdateGame()
         {
+            // If the user presses a button, unhide the screen
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN || 
+            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)) {
+                screenHidden = false;
+            }
+
+            
             int mouseX, mouseY;
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
 
@@ -244,7 +251,7 @@ namespace skaktego
                     button.Update(mouseX, mouseY, boardRect, events);
                 }
             }
-            else
+            else if (!screenHidden)
             {
                 Rect xButtonRect = new Rect(0, 0, 0, 0);
                 xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
@@ -349,8 +356,15 @@ namespace skaktego
             }
         }
 
-        public void DrawGame(GameState gameState)
-        {
+        public void DrawGame(GameState gameState) {
+            Console.ReadKey();
+            if (screenHidden) {
+                DrawOverlay();
+                renderer.Present();
+                return;
+            }
+
+
             // Draw the background
             // and clear the screen
             renderer.SetColor(new Color(0X111111));
@@ -577,7 +591,7 @@ namespace skaktego
 
         private void DrawOverlay() {
             renderer.SetColor(new Color(0X000000FF));
-            renderer.FillRect(screenRect);
+            renderer.Clear();
 
             Rect overlayTextRect1 = new Rect(0, 0, 0, 0);
             overlayTextRect1.W = (int)(screenRect.W - screenRect.W * 0.5);
@@ -593,8 +607,6 @@ namespace skaktego
 
             renderer.RenderTexture(overlayText1, overlayTextRect1, null);
             renderer.RenderTexture(overlayText2, overlayTextRect2, null);
-
-            renderer.Present();
         }
 
         private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos)
