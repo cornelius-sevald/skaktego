@@ -115,10 +115,13 @@ namespace skaktego {
         public void GameStart(GameState gameState) {
             if (!isGaming) {
                 this.gameState = gameState;
-                lastPlayer = gameState.player;
-                isGaming = true;
-                doneGaming = false;
             }
+            lastPlayer = gameState.player;
+            isGaming = true;
+            isMenuActive = false;
+            screenHidden = false;
+            doneGaming = false;
+            gameResult = GameResults.StillGaming;
         }
 
         public ChessMove GetMove(GameState gameState) {
@@ -128,9 +131,6 @@ namespace skaktego {
 
         private void BeginGaming() {
             storedMove = new MVar<ChessMove>();
-            isGaming = true;
-            gameResult = GameResults.StillGaming;
-            isMenuActive = false;
             game = new Game(this, this);
             gameThread = new Thread(new ThreadStart(() => {
                 gameState = game.PlayGame();
@@ -261,7 +261,6 @@ namespace skaktego {
                                 if (storedMove.HasValue) {
                                     storedMove.TakeMVar(x => x);
                                 }
-                                Console.WriteLine("MOVE!!");
                                 storedMove.Var = move;
                                 legalMoves.Clear();
                                 selectedTile = null;
