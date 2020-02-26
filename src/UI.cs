@@ -5,9 +5,6 @@ using System.Collections.Generic;
 using SDL2;
 
 namespace skaktego {
-    public enum GameResults {
-        WhiteWin, BlackWin, Tie, StillGaming
-    }
 
     public sealed class UI : IPlayer {
         // Screen size
@@ -44,7 +41,7 @@ namespace skaktego {
         private Button[] menuButtons;
         private Button[] gameButtons;
         private Button[] endButtons;
-        private GameResults gameResult = GameResults.StillGaming;
+        private GameResults gameResult = GameResults.Tie;
 
         private MVar<ChessMove> storedMove;
         private GameState gameState = null;
@@ -121,7 +118,6 @@ namespace skaktego {
             isMenuActive = false;
             screenHidden = false;
             doneGaming = false;
-            gameResult = GameResults.StillGaming;
         }
 
         public ChessMove GetMove(GameState gameState) {
@@ -133,16 +129,10 @@ namespace skaktego {
             storedMove = new MVar<ChessMove>();
             game = new Game(this, this);
             gameThread = new Thread(new ThreadStart(() => {
-                gameState = game.PlayGame();
-                if (Engine.IsCheckmate(gameState)) {
-                    if (gameState.player == ChessColors.White) {
-                        gameResult = GameResults.BlackWin;
-                    } else {
-                        gameResult = GameResults.WhiteWin;
-                    }
-                } else if (Engine.IsTie(gameState)) {
-                    gameResult = GameResults.Tie;
-                }
+                Tuple<GameState, GameResults> results = game.PlayGame();
+                gameState = results.Item1;
+                gameResult = results.Item2;
+                doneGaming = true;
             }));
             gameThread.Start();
         }
@@ -376,7 +366,9 @@ namespace skaktego {
             renderer.SetColor(new Color(0Xff002277));
             renderer.FillRect(xButtonRect);
 
-            DrawEndScreen(screenRect);
+            if (doneGaming) {
+                DrawEndScreen(screenRect);
+            }
 
             // Draw the in game menu, if it is active
             if (isMenuActive) {
@@ -491,13 +483,10 @@ namespace skaktego {
         }
 
         private void DrawEndScreen(Rect dst) {
-            if (gameResult == GameResults.StillGaming) {
+            if (!doneGaming) {
                 return;
             }
 
-            doneGaming = true;
-            highlightedTile = null;
-            selectedTile = null;
 
             Rect endOverlayRect = new Rect(0, 0, 0, 0);
             endOverlayRect.W = dst.W - dst.W / 6;
@@ -516,8 +505,10 @@ namespace skaktego {
             renderer.SetColor(new Color(0X55555577));
             renderer.FillRect(endOverlayRect);
 
-            Texture textTexture = endTextTextures[(int)gameResult];
-            renderer.RenderTexture(textTexture, endTextRect, null);
+            if (gameResult != GameResults.Quit) {
+                Texture textTexture = endTextTextures[(int)gameResult];
+                renderer.RenderTexture(textTexture, endTextRect, null);
+            }
 
             foreach (Button button in endButtons) {
                 button.Draw(renderer, screenRect);

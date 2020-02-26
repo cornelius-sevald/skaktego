@@ -342,6 +342,11 @@ namespace skaktego {
                 }
             }
 
+            // Check if a king was captured
+            if (captured != null && captured.Type == PieceTypes.King) {
+                newGameState.kingTaken = captured.Color;
+            }
+
             // Advance the game clocks.
             if (captured == null && piece.Type != PieceTypes.Pawn) {
                 newGameState.halfmoveClock++;

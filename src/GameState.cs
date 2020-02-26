@@ -73,6 +73,7 @@ namespace skaktego {
         public ChessColors player;
         public CastlingInfo castling;
         public Nullable<BoardPosition> enPassant;
+        public Nullable<ChessColors> kingTaken = null;
         public int halfmoveClock = 0;
         public int fullmoveClock = 1;
 
@@ -89,11 +90,12 @@ namespace skaktego {
         }
 
         public GameState(Board board, ChessColors player, CastlingInfo castling,
-        Nullable<BoardPosition> enPassant, int halfmoveClock, int fullmoveClock) {
+        Nullable<BoardPosition> enPassant, Nullable<ChessColors> kingTaken, int halfmoveClock, int fullmoveClock) {
             this.board = board;
             this.player = player;
             this.castling = castling;
             this.enPassant = enPassant;
+            this.kingTaken = kingTaken;
             this.halfmoveClock = halfmoveClock;
             this.fullmoveClock = fullmoveClock;
         }
@@ -127,11 +129,26 @@ namespace skaktego {
                 enPassant = BoardPosition.FromString(splitStr[3]);
             }
 
-            int halfmoveClock = int.Parse(splitStr[4]);
-            int fullmoveClock = int.Parse(splitStr[5]);
+            Nullable<ChessColors> kingTaken;
+            switch (splitStr[4]) {
+                case "w":
+                    kingTaken = ChessColors.White;
+                    break;
+                case "b":
+                    kingTaken = ChessColors.Black;
+                    break;
+                case "-":
+                    kingTaken = null;
+                    break;
+                default:
+                    throw new ArgumentException("'" + splitStr[4] + "' is not a valid string");
+            }
+
+            int halfmoveClock = int.Parse(splitStr[5]);
+            int fullmoveClock = int.Parse(splitStr[6]);
 
             return new GameState(board, player, castling,
-            enPassant, halfmoveClock, fullmoveClock);
+            enPassant, kingTaken, halfmoveClock, fullmoveClock);
         }
 
         public override string ToString() {
@@ -139,11 +156,16 @@ namespace skaktego {
             string playerStr = player.ToChar().ToString();
             string castlingStr = castling.ToString();
             string enPassantStr = enPassant == null ? "-" : enPassant.ToString();
-            string halfmoveClockStr = halfmoveClock.ToString();
-            string fullmoveClockStr = fullmoveClock.ToString();
-
+            string kingTakenStr;
+            if (kingTaken.HasValue) {
+                kingTakenStr = kingTaken.Value == ChessColors.White ? "w" : "b";
+            } else {
+                kingTakenStr = "-";
+            }
+            string halfmoveClockStr = halfmoveClock.ToString(); string fullmoveClockStr = fullmoveClock.ToString();
+           
             return string.Join(' ', boardStr, playerStr, castlingStr,
-            enPassantStr, halfmoveClockStr, fullmoveClockStr);
+            enPassantStr, kingTakenStr, halfmoveClockStr, fullmoveClockStr);
         }
     }
 
