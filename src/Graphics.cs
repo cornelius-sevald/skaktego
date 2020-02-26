@@ -58,6 +58,11 @@ namespace skaktego {
             WinPtr = window;
         }
 
+        // Set the window icon
+        public void SetWindowIcon(Surface surf) {
+            SDL.SDL_SetWindowIcon(WinPtr, surf.SurfPtr);
+        }
+
         ~Window() {
             SDL.SDL_DestroyWindow(WinPtr);
         }
@@ -225,6 +230,16 @@ namespace skaktego {
 
     public class Surface : IDisposable {
         public IntPtr SurfPtr { get; private set; }
+
+        // Load a surface from an image file
+        public Surface(string name) {
+            IntPtr surface = SDL_image.IMG_Load(name);
+            if (surface == IntPtr.Zero) {
+                throw new SDLException("IMG_Load");
+            }
+
+            SurfPtr = surface;
+        }
 
         // Render some text to a surface
         public Surface(Font font, string text, Color color) {
