@@ -261,7 +261,11 @@ namespace skaktego {
                                 if (storedMove.HasValue) {
                                     storedMove.TakeMVar(x => x);
                                 }
+                                Console.WriteLine("MOVE!!");
                                 storedMove.Var = move;
+                                legalMoves.Clear();
+                                selectedTile = null;
+                                highlightedTile = null;
                             }
                         }
                         SelectTile(gameState, highlightedTile);
