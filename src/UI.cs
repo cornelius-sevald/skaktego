@@ -97,11 +97,15 @@ namespace skaktego {
 
         private void StopGaming() {
             isGaming = false;
-            game.quit = true;
-            if (!storedMove.HasValue) {
+            if (game != null) {
+                game.quit = true;
+            }
+            if (storedMove != null && !storedMove.HasValue) {
                 storedMove.Var = new ChessMove();
             }
-            gameThread.Join();
+            if (gameThread != null && gameThread.IsAlive) {
+                gameThread.Join();
+            }
         }
 
         public void Update() {
