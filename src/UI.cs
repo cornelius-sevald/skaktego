@@ -62,6 +62,10 @@ namespace skaktego
             window = new Window("skaktego", 100, 100, SCREEN_WIDTH, SCREEN_HEIGHT);
             renderer = new Renderer(window);
 
+            using (Surface icon = new Surface("skaktegoIcon.png")) {
+                window.SetWindowIcon(icon);
+            } 
+
             font = new Font("playfair-display/PlayfairDisplay-Regular.ttf", 128);
 
             legalMoves = new List<BoardPosition>();

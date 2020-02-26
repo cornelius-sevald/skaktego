@@ -233,7 +233,8 @@ namespace skaktego {
 
         // Load a surface from an image file
         public Surface(string name) {
-            IntPtr surface = SDL_image.IMG_Load(name);
+            string path = Path.Combine(Graphics.RESOURCE_PATH, name);
+            IntPtr surface = SDL_image.IMG_Load(path);
             if (surface == IntPtr.Zero) {
                 throw new SDLException("IMG_Load");
             }
