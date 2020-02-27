@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 
 namespace skaktego {
 
@@ -7,8 +8,8 @@ namespace skaktego {
     }
 
     public class Game {
-        const string normalStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 s";
-        const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 st";
+        const string normalStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 s";
+        const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 st";
 
         public IPlayer whitePlayer;
         public IPlayer blackPlayer;
@@ -46,7 +47,7 @@ namespace skaktego {
 
             bool checkMate = Engine.IsCheckmate(startState);
             bool tie = Engine.IsTie(startState);
-            bool kingTaken = startState.kingTaken.HasValue;
+            bool kingTaken = startState.taken.Any(p => p.Type == PieceTypes.King);
 
             GameState gameState = GameState.FromString(startState.ToString());
             while (!checkMate && !kingTaken && !tie && !quit) {
@@ -78,7 +79,7 @@ namespace skaktego {
                 gameState = Engine.ApplyMove(gameState, move, false);
                 checkMate = Engine.IsCheckmate(gameState);
                 tie = Engine.IsTie(gameState);
-                kingTaken = gameState.kingTaken.HasValue;
+                kingTaken = gameState.taken.Any(p => p.Type == PieceTypes.King);
             }
 
             GameResults results = GameResults.Quit;
@@ -98,7 +99,7 @@ namespace skaktego {
                         break;
                 }
             } else if (kingTaken) {
-                switch (gameState.kingTaken) {
+                switch (gameState.taken.Find(p => p.Type == PieceTypes.King).Color) {
                     case ChessColors.Black:
                         Console.WriteLine("Hvid vinder");
                         results = GameResults.WhiteWin;
