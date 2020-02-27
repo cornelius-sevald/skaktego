@@ -154,6 +154,9 @@ namespace skaktego {
 
         private void StopGaming() {
             isGaming = false;
+            highlightedTile = null;
+            selectedTile = null;
+            legalMoves = null;
             if (game != null) {
                 game.quit = true;
             }
