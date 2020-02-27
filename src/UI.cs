@@ -183,6 +183,19 @@ namespace skaktego {
                 quit = true;
             }
 
+            // Check if the user is done preparing in skaktego
+            if (gameState != null &&
+            gameState.gameType == GameTypes.SkaktegoPrep &&
+            events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_RETURN)) {
+
+                if (storedMove.HasValue) {
+                    storedMove.TakeMVar(x => x);
+                }
+                storedMove.Var = Game.DONE_PREPARING_MOVE;
+
+            }
+
 
             if (isGaming) {
                 if (gameState != null) {

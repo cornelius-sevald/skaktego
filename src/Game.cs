@@ -8,8 +8,11 @@ namespace skaktego {
     }
 
     public class Game {
+        // Move signaling that the player is done preparing in skaktego
+        public static readonly ChessMove DONE_PREPARING_MOVE = new ChessMove( new BoardPosition(-1, -1)
+                                                                            , new BoardPosition(-1, -1));
         const string normalStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 s";
-        const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 st";
+        const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 stp";
 
         public IPlayer whitePlayer;
         public IPlayer blackPlayer;
@@ -74,6 +77,16 @@ namespace skaktego {
                         }
                         move = whitePlayer.GetMove(obfGameState);
                         break;
+                }
+
+                // Check if the player is done preparing
+                if (move.to == DONE_PREPARING_MOVE.to && move.from == DONE_PREPARING_MOVE.from) {
+                    // When the black player is done preparing, end the preparation phase
+                    if (gameState.player == ChessColors.Black) {
+                        gameState.gameType = GameTypes.Skaktego;
+                    }
+                    gameState.player = gameState.player.Other();
+                    continue;
                 }
 
                 gameState = Engine.ApplyMove(gameState, move, false);

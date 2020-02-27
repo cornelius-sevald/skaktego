@@ -62,6 +62,12 @@ namespace skaktego {
         /// All possible, legal moves for the piece on the selected position
         /// </returns>
         public static List<BoardPosition> GetLegalMoves(GameState realState, BoardPosition pos, Piece piece) {
+            // If in the preperation phase of skaktego, other moves are legal
+            if (realState.gameType == GameTypes.SkaktegoPrep) {
+                return GetSkaktegoPrepMoves(realState, pos, piece);
+            }
+
+            // Otherwise it is just like normal chess
             GameState gameState = GameState.FromString(realState.ToString());
             List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
             List<BoardPosition> legalMoves = new List<BoardPosition>();
@@ -261,6 +267,11 @@ namespace skaktego {
         /// A new gamestate where the move have been made
         /// </returns>
         public static GameState ApplyMove(GameState gameState, ChessMove move, bool strict=true) {
+            // If in the preperation phase of skaktego, pieces move differently
+            if (gameState.gameType == GameTypes.SkaktegoPrep) {
+                return ApplySkaktegoPrepMove(gameState, move, strict);
+            }
+
             var newGameState = GameState.FromString(gameState.ToString());
             Piece piece = newGameState.board.GetPiece(move.from);
 
@@ -797,6 +808,62 @@ namespace skaktego {
             }
 
             return new List<BoardPosition>(possibleMoves);
+        }
+
+        private static List<BoardPosition> GetSkaktegoPrepMoves(GameState gameState, BoardPosition pos, Piece piece) {
+            List<BoardPosition> possibleMoves = new List<BoardPosition>();
+
+            if (piece == null || piece.Color != gameState.player) {
+                return possibleMoves;
+            }
+
+            if (gameState.player == ChessColors.White) {
+                for (int i = 0; i < gameState.board.Size; i++) {
+                    for (int j = 0; j < 2; j++) {
+                        BoardPosition here = new BoardPosition(i, j);
+                        if (here == pos) {
+                            continue;
+                        }
+                        possibleMoves.Add(here);
+                    }
+                }
+            } else {
+                for (int i = 0; i < gameState.board.Size; i++) {
+                    for (int j = 0; j < 2; j++) {
+                        BoardPosition here = new BoardPosition(i, gameState.board.Size - j - 1);
+                        if (here == pos) {
+                            continue;
+                        }
+                        possibleMoves.Add(here);
+                    }
+                }
+            }
+
+            return possibleMoves;
+        }
+
+        public static GameState ApplySkaktegoPrepMove(GameState gameState, ChessMove move, bool strict=true) {
+            var newGameState = GameState.FromString(gameState.ToString());
+            Piece fromPiece = newGameState.board.GetPiece(move.from);
+
+            if (strict) {
+                // The move is illegal if it is not the current player's turn
+                if (fromPiece == null || fromPiece.Color != newGameState.player) {
+                    return gameState;
+                }
+
+                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, move.from, fromPiece);
+                // If the move is not legal, do not apply it
+                if (!legalMoves.Contains(move.to)) {
+                    return gameState;
+                }
+            }
+
+            Piece toPiece = newGameState.board.GetPiece(move.to);
+            newGameState.board.SetPiece(fromPiece, move.to);
+            newGameState.board.SetPiece(toPiece, move.from);
+
+            return newGameState;
         }
 
         /// <summary>
