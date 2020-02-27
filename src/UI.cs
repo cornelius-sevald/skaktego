@@ -346,7 +346,7 @@ namespace skaktego {
             renderer.SetColor(new Color(0X111111));
             renderer.Clear();
 
-            //Screen geometry only during gameplay
+            // Screen geometry only during gameplay
             Rect boardRect = new Rect(0, 0, 0, 0);
             {
                 // Board size
@@ -355,9 +355,14 @@ namespace skaktego {
                 boardRect.H = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
             }
 
-            // Draw the board
+            // Set board dimensions
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
+
+            // Draw the graveyard
+            DrawGraveyard(screenRect, boardRect);
+            
+            // Draw the board
             DrawBoard(gameState.board, boardRect);
 
             // Draw the higlighted, selected and legal tiles
@@ -512,6 +517,36 @@ namespace skaktego {
         private void DrawPiece(Piece piece, Rect dst) {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void DrawGraveyard(Rect screen, Rect board) {
+            int x = 0, y = 0;
+            int i = 0, j = 0;
+            int w = (int)(Math.Min(screen.H, screen.W) / 12.0);
+            int h = w;
+            int graveSpace = board.X / w == 0? screen.W / w : board.X / w;
+            Rect square = new Rect(x,y,w,h);
+            Rect halfScreen = new Rect(0,0,screen.W/2,screen.H);
+            renderer.SetColor(new Color(0X222222FF));
+            renderer.FillRect(halfScreen);
+
+            for (int k = 0; k < gameState.taken.Count; k++) {
+                if (gameState.taken[k].Color == ChessColors.Black) {
+                    x = w * (j % graveSpace);
+                    y = (screen.H - h) - (h * (j / graveSpace));
+                    square.X = x;
+                    square.Y = y;
+                    DrawPiece(gameState.taken[k], square);
+                    j++;
+                } else {
+                    x = w * (i % graveSpace);
+                    y = h * (i / graveSpace);
+                    square.X = x;
+                    square.Y = y;
+                    DrawPiece(gameState.taken[k], square);
+                    i++;
+                }
+            }
         }
 
         private void DrawEndScreen(Rect dst) {
