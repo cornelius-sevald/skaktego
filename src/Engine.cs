@@ -267,6 +267,15 @@ namespace skaktego {
         /// A new gamestate where the move have been made
         /// </returns>
         public static GameState ApplyMove(GameState gameState, ChessMove move, bool strict=true) {
+            // If the move is out of bounds, ignore it
+            if (move.from.column < 0                     || move.from.row < 0                     ||
+                move.from.column >= gameState.board.Size || move.from.row >= gameState.board.Size ||
+                move.to.column   < 0                     || move.to.row   < 0                     ||
+                move.to.column   >= gameState.board.Size || move.to.row   >= gameState.board.Size)
+            {
+                return gameState;
+            }
+
             // If in the preperation phase of skaktego, pieces move differently
             if (gameState.gameType == GameTypes.SkaktegoPrep) {
                 return ApplySkaktegoPrepMove(gameState, move, strict);
