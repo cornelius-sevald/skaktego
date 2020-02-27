@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using System.Collections.Generic;
 
 namespace skaktego {
 
@@ -81,16 +82,17 @@ namespace skaktego {
 
     public class GameState {
         public Board board;
+        public List<Piece> taken;
         public ChessColors player;
         public CastlingInfo castling;
         public Nullable<BoardPosition> enPassant;
-        public Nullable<ChessColors> kingTaken = null;
         public int halfmoveClock = 0;
         public int fullmoveClock = 1;
         public GameTypes gameType;
 
         public GameState(Board board) {
             this.board = board;
+            this.taken = new List<Piece>();
             this.player = ChessColors.White;
             this.castling = new CastlingInfo {
                 whiteKing = true,
@@ -102,14 +104,14 @@ namespace skaktego {
             gameType = GameTypes.Normal;
         }
 
-        public GameState(Board board, ChessColors player, CastlingInfo castling,
-        Nullable<BoardPosition> enPassant, Nullable<ChessColors> kingTaken,
+        public GameState(Board board, List<Piece> taken, ChessColors player,
+        CastlingInfo castling, Nullable<BoardPosition> enPassant,
         int halfmoveClock, int fullmoveClock, GameTypes gameType) {
             this.board = board;
+            this.taken = taken;
             this.player = player;
             this.castling = castling;
             this.enPassant = enPassant;
-            this.kingTaken = kingTaken;
             this.halfmoveClock = halfmoveClock;
             this.fullmoveClock = fullmoveClock;
             this.gameType = gameType;
@@ -132,38 +134,40 @@ namespace skaktego {
 
         public static GameState FromString(string stateStr) {
             string[] splitStr = stateStr.Split(' ');
+            var boardStr     = splitStr[0];
+            var takenStr     = splitStr[1];
+            var playerStr    = splitStr[2];
+            var castlingStr  = splitStr[3];
+            var enPassantStr = splitStr[4];
+            var halfmoveStr  = splitStr[5];
+            var fullmoveStr  = splitStr[6];
+            var gameTypeStr  = splitStr[7];
 
             // Construct all of the elements of the game state from the
             // string parts.
-            Board board = Board.FromString(splitStr[0]);
-            ChessColors player = ChessColorsMethods.FromChar(splitStr[1][0]);
-            CastlingInfo castling = CastlingInfo.FromString(splitStr[2]);
+            Board board = Board.FromString(boardStr);
+
+            List<Piece> taken = new List<Piece>();
+            if (takenStr != "-") {
+                foreach (char pieceChar in takenStr) {
+                    Piece piece = Piece.FromChar(pieceChar);
+                    taken.Add(piece);
+                }
+            }
+
+            ChessColors player = ChessColorsMethods.FromChar(playerStr[0]);
+            CastlingInfo castling = CastlingInfo.FromString(castlingStr);
 
             Nullable<BoardPosition> enPassant = null;
-            if (splitStr[3] != "-") {
-                enPassant = BoardPosition.FromString(splitStr[3]);
+            if (enPassantStr != "-") {
+                enPassant = BoardPosition.FromString(enPassantStr);
             }
 
-            Nullable<ChessColors> kingTaken;
-            switch (splitStr[4]) {
-                case "w":
-                    kingTaken = ChessColors.White;
-                    break;
-                case "b":
-                    kingTaken = ChessColors.Black;
-                    break;
-                case "-":
-                    kingTaken = null;
-                    break;
-                default:
-                    throw new ArgumentException("'" + splitStr[4] + "' is not a valid string");
-            }
-
-            int halfmoveClock = int.Parse(splitStr[5]);
-            int fullmoveClock = int.Parse(splitStr[6]);
+            int halfmoveClock = int.Parse(halfmoveStr);
+            int fullmoveClock = int.Parse(fullmoveStr);
 
             GameTypes gameType;
-            switch (splitStr[7]) {
+            switch (gameTypeStr) {
                 case "s":
                     gameType = GameTypes.Normal;
                     break;
@@ -174,25 +178,24 @@ namespace skaktego {
                     gameType = GameTypes.SkaktegoPrep;
                     break;
                 default:
-                    throw new ArgumentException("'" + splitStr[7] + "' is not a valid string");
+                    throw new ArgumentException("'" + gameTypeStr + "' is not a valid string");
             }
 
-            return new GameState(board, player, castling,
-            enPassant, kingTaken, halfmoveClock,
+            return new GameState(board, taken, player,
+            castling, enPassant, halfmoveClock,
             fullmoveClock, gameType);
         }
 
         public override string ToString() {
             string boardStr = board.ToString();
+            string takenStr = "";
+            foreach (Piece piece in taken) {
+                takenStr += piece.ToString();
+            }
+            takenStr = string.IsNullOrEmpty(takenStr) ? "-" : takenStr;
             string playerStr = player.ToChar().ToString();
             string castlingStr = castling.ToString();
             string enPassantStr = enPassant == null ? "-" : enPassant.ToString();
-            string kingTakenStr;
-            if (kingTaken.HasValue) {
-                kingTakenStr = kingTaken.Value == ChessColors.White ? "w" : "b";
-            } else {
-                kingTakenStr = "-";
-            }
             string halfmoveClockStr = halfmoveClock.ToString(); string fullmoveClockStr = fullmoveClock.ToString();
             string gameTypeStr;
             switch (gameType) {
@@ -207,8 +210,8 @@ namespace skaktego {
                     break;
             }
            
-            return string.Join(' ', boardStr, playerStr, castlingStr,
-            enPassantStr, kingTakenStr, halfmoveClockStr,
+            return string.Join(' ', boardStr, takenStr, playerStr,
+            castlingStr, enPassantStr, halfmoveClockStr,
             fullmoveClockStr, gameTypeStr);
         }
     }
