@@ -7,19 +7,30 @@ namespace skaktego {
     }
 
     public class Game {
-        const string startStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 st";
+        const string normalStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 s";
+        const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR w KQkq:a1:h1:a8:h8 - - 0 1 st";
 
         public IPlayer whitePlayer;
         public IPlayer blackPlayer;
+        public GameTypes gameType;
         public bool quit = false;
 
-        public Game(IPlayer whitePlayer, IPlayer blackPlayer) {
+        public Game(IPlayer whitePlayer, IPlayer blackPlayer, GameTypes gameType) {
             this.whitePlayer = whitePlayer;
             this.blackPlayer = blackPlayer;
+            this.gameType = gameType;
         }
 
+        public Game(IPlayer whitePlayer, IPlayer blackPlayer)
+            : this(whitePlayer, blackPlayer, GameTypes.Normal) {}
+
         public Tuple<GameState, GameResults> PlayGame() {
-            GameState startState = GameState.FromString(startStateStr);
+            GameState startState;
+            if (gameType == GameTypes.Normal) {
+                startState = GameState.FromString(normalStartStateStr);
+            } else {
+                startState = GameState.FromString(skaktegoStartStateStr);
+            }
             return PlayGame(startState);
         }
 
@@ -39,17 +50,27 @@ namespace skaktego {
 
             GameState gameState = GameState.FromString(startState.ToString());
             while (!checkMate && !kingTaken && !tie && !quit) {
+                // Obfuscated version of the board, if playing skaktego.
+                // Otherwise just a board.
                 GameState obfGameState;
                 ChessMove move;
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        obfGameState = GameState.FromString(gameState.ToString());
-                        obfGameState.Obfuscate(gameState.player);
+                        if (gameType == GameTypes.Normal) {
+                            obfGameState = gameState;
+                        } else {
+                            obfGameState = GameState.FromString(gameState.ToString());
+                            obfGameState.Obfuscate(gameState.player);
+                        }
                         move = blackPlayer.GetMove(obfGameState);
                         break;
                     default:
-                        obfGameState = GameState.FromString(gameState.ToString());
-                        obfGameState.Obfuscate(gameState.player);
+                        if (gameType == GameTypes.Normal) {
+                            obfGameState = gameState;
+                        } else {
+                            obfGameState = GameState.FromString(gameState.ToString());
+                            obfGameState.Obfuscate(gameState.player);
+                        }
                         move = whitePlayer.GetMove(obfGameState);
                         break;
                 }

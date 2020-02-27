@@ -68,12 +68,21 @@ namespace skaktego {
 
             buttons = new Button[]{
                 new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => { StopGaming(); BeginGaming(); }),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => {
+                    GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
+                    StopGaming();
+                    BeginGaming(gameType);
+                }),
                 new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, StopGaming)
             };
 
             menuButtons = new Button[]{
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Game", font, BeginGaming),
+                new Button(3/8.0,  8/24.0, 1/4.0, 1/12.0, "Play Skaktego", font, () => {
+                    BeginGaming(GameTypes.SkaktegoPrep);
+                }),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Chess", font, () => {
+                    BeginGaming(GameTypes.Normal);
+                }),
                 new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
             };
 
@@ -82,7 +91,11 @@ namespace skaktego {
             };
 
             endButtons = new Button[]{
-                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Rematch", font, () => { StopGaming(); BeginGaming(); }),
+                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Rematch", font, () => {
+                    GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
+                    StopGaming();
+                    BeginGaming(gameType);
+                }),
                 new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Main Menu", font, StopGaming)
             };
 
@@ -110,7 +123,6 @@ namespace skaktego {
         }
 
         public void GameStart(GameState gameState) {
-            Console.WriteLine(gameState.gameType);
             if (!isGaming) {
                 this.gameState = gameState;
             }
@@ -126,9 +138,9 @@ namespace skaktego {
             return storedMove.Var;
         }
 
-        private void BeginGaming() {
+        private void BeginGaming(GameTypes gameType) {
             storedMove = new MVar<ChessMove>();
-            game = new Game(this, this);
+            game = new Game(this, this, gameType);
             gameThread = new Thread(new ThreadStart(() => {
                 Tuple<GameState, GameResults> results = game.PlayGame();
                 gameState = results.Item1;
@@ -155,7 +167,7 @@ namespace skaktego {
             PollEvents();
 
             // When the player switches, hide the screen
-            if (gameState != null && gameState.player != lastPlayer) {
+            if (gameState != null && gameState.player != lastPlayer && gameState.gameType != GameTypes.Normal) {
                 screenHidden = true;
                 lastPlayer = gameState.player;
             }
