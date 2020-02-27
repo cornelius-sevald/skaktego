@@ -18,12 +18,16 @@ namespace skaktego {
         /// <returns>
         /// All possible moves for the current player
         /// </returns>
-        public static List<BoardPosition> GetAllLegalMoves(GameState gameState) {
-            List<BoardPosition> allMoves = new List<BoardPosition>();
+        public static List<ChessMove> GetAllLegalMoves(GameState gameState) {
+            List<ChessMove> allMoves = new List<ChessMove>();
             for (int i = 0; i < gameState.board.Size; i++) {
                 for (int j = 0; j < gameState.board.Size; j++) {
-                    List<BoardPosition> legalMoves = GetLegalMoves(gameState, new BoardPosition(i, j));
-                    allMoves = allMoves.Concat(legalMoves).ToList();
+                    BoardPosition here = new BoardPosition(i, j);
+                    List<BoardPosition> legalMoves = GetLegalMoves(gameState, here);
+                    foreach (BoardPosition legalMove in legalMoves) {
+                        ChessMove move = new ChessMove(here, legalMove);
+                        allMoves.Add(move);
+                    }
                 }
             }
             return allMoves;
@@ -979,14 +983,17 @@ namespace skaktego {
         }
 
         /// <summary>
-        /// Checks if the game is a tie via different parameters
+        /// Does not actually check if the game is a tie,
+        /// but instead checks if the game is over.
+        /// 
+        /// <para>To check if the game actually is a tie,
+        /// use <c>IsTie AND (NOT IsCheck)</c></para>
+        /// 
+        /// <seealso cref="IsGameOver"/>
         /// </summary>
         /// <param name="realState">
         /// The state of the game
         /// </param>
-        /// <returns>
-        /// True if the game is a tie, and false if it is not
-        /// </returns>
         public static bool IsTie(GameState realState) {
             GameState gameState = GameState.FromString(realState.ToString());
 
@@ -1009,7 +1016,7 @@ namespace skaktego {
             }
 
             //if there are no legal moves for the current player
-            List<BoardPosition> legalMoves = GetAllLegalMoves(gameState);
+            List<ChessMove> legalMoves = GetAllLegalMoves(gameState);
             if (legalMoves.Count == 0) {
                 return true;
             }
@@ -1017,7 +1024,7 @@ namespace skaktego {
         }
 
         /// <summary>
-        /// Checks if the game is a checkmate by using both check and tie funtions
+        /// Check if the game is a checkmate by using both check and tie funtions
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
@@ -1026,10 +1033,20 @@ namespace skaktego {
         /// True if the king is in check and the game should otherwise be a tie
         /// </returns>
         public static bool IsCheckmate(GameState gameState) {
-            if (IsCheck(gameState) && IsTie(gameState)) {
-                return true;
-            }
-            return false;
+            return IsCheck(gameState) && IsTie(gameState);
+        }
+
+        /// <summary>
+        /// Check if the game is over
+        /// 
+        /// <para>This function is equivelant to <c>IsTie</c>.</para>
+        /// 
+        /// <seealso cref="IsTie"/>
+        /// </summary>
+        /// <param name="gameState"></param>
+        /// <returns>True if the game is a tie</returns>
+        public static bool IsGameOver(GameState gameState) {
+            return IsTie(gameState);
         }
     }
 }

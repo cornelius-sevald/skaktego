@@ -124,7 +124,7 @@ namespace skaktego {
             }
         }
 
-        public void GameStart(GameState gameState) {
+        public void GameStart(GameState gameState, ChessColors _) {
             if (!isGaming) {
                 this.gameState = gameState;
             }
@@ -137,12 +137,15 @@ namespace skaktego {
 
         public ChessMove GetMove(GameState gameState) {
             this.gameState = gameState;
-            return storedMove.Var;
+            ChessMove move = storedMove.Var;
+            this.gameState = Engine.ApplyMove(gameState, move, false);
+            return move;
         }
 
         private void BeginGaming(GameTypes gameType) {
             storedMove = new MVar<ChessMove>();
-            game = new Game(this, this, gameType);
+            ChessAI ai = new ChessAI(3);
+            game = new Game(this, ai, gameType);
             gameThread = new Thread(new ThreadStart(() => {
                 Tuple<GameState, GameResults> results = game.PlayGame();
                 gameState = results.Item1;

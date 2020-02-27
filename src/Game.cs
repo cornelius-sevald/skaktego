@@ -44,8 +44,8 @@ namespace skaktego {
                 GameState blackObfGameState = GameState.FromString(startState.ToString());
                 whiteObfGameState.Obfuscate(ChessColors.White);
                 blackObfGameState.Obfuscate(ChessColors.Black);
-                whitePlayer.GameStart(whiteObfGameState);
-                blackPlayer.GameStart(blackObfGameState);
+                whitePlayer.GameStart(whiteObfGameState, ChessColors.White);
+                blackPlayer.GameStart(blackObfGameState, ChessColors.Black);
             }
 
             bool checkMate = Engine.IsCheckmate(startState);
