@@ -863,6 +863,54 @@ namespace skaktego {
             newGameState.board.SetPiece(fromPiece, move.to);
             newGameState.board.SetPiece(toPiece, move.from);
 
+            // Update castling info
+            BoardPosition leftRook;
+            BoardPosition rightRook;
+            switch (newGameState.player) {
+                case ChessColors.Black:
+                    leftRook  = newGameState.castling.blackLeftRook;
+                    rightRook = newGameState.castling.blackRightRook;
+                    break;
+                default:
+                    leftRook  = newGameState.castling.whiteLeftRook;
+                    rightRook = newGameState.castling.whiteRightRook;
+                    break;
+            }
+            if (fromPiece.Type == PieceTypes.Rook && toPiece.Type == PieceTypes.Rook) {
+                Console.WriteLine("Rooks switched places");
+                // No need to do anything, the rooks have switched places
+            } else if (fromPiece.Type == PieceTypes.Rook) {
+                Console.WriteLine("Rook moved");
+                if (move.from == leftRook) {
+                    leftRook = move.to;
+                } else {
+                    rightRook = move.to;
+                }
+            } else if (toPiece.Type == PieceTypes.Rook) {
+                Console.WriteLine("Rook replaced");
+                if (move.to == leftRook) {
+                    leftRook = move.from;
+                } else {
+                    rightRook = move.from;
+                }
+            }
+            // Check if `leftRook` is still to the left of `rightRook`
+            if (leftRook.column > rightRook.column) {
+                BoardPosition tmpPos = leftRook;
+                leftRook = rightRook;
+                rightRook = tmpPos;
+            }
+            switch (newGameState.player) {
+                case ChessColors.Black:
+                    newGameState.castling.blackLeftRook  = leftRook;
+                    newGameState.castling.blackRightRook = rightRook;
+                    break;
+                default:
+                    newGameState.castling.whiteLeftRook  = leftRook;
+                    newGameState.castling.whiteRightRook = rightRook;
+                    break;
+            }
+
             return newGameState;
         }
 

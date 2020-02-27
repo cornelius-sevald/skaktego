@@ -135,6 +135,7 @@ namespace skaktego {
 
         public ChessMove GetMove(GameState gameState) {
             this.gameState = gameState;
+            Console.WriteLine(gameState);
             return storedMove.Var;
         }
 
