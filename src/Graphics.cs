@@ -244,7 +244,7 @@ namespace skaktego {
 
         // Render some text to a surface
         public Surface(Font font, string text, Color color) {
-            IntPtr surface = SDL_ttf.TTF_RenderText_Solid(font.FontPtr, text, color.SDLColor());
+            IntPtr surface = SDL_ttf.TTF_RenderUTF8_Solid(font.FontPtr, text, color.SDLColor());
             if (surface == IntPtr.Zero) {
                 throw new SDLException("TTF_RenderText_Solid");
             }
