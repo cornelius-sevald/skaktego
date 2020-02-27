@@ -36,6 +36,8 @@ namespace skaktego {
         private bool isGaming = false;
         private bool doneGaming = false;
         private bool screenHidden = false;
+        //Has the user already pressed something this frame
+        private bool pressedSomething = false;
         private ChessColors lastPlayer = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
@@ -67,23 +69,23 @@ namespace skaktego {
             events = new List<SDL.SDL_Event>();
 
             buttons = new Button[]{
-                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => {
+                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Fortsæt", font, () => isMenuActive = false),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Nyt Spil", font, () => {
                     GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
                     StopGaming();
                     BeginGaming(gameType);
                 }),
-                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, StopGaming)
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Hovedmenu", font, StopGaming)
             };
 
             menuButtons = new Button[]{
-                new Button(3/8.0,  8/24.0, 1/4.0, 1/12.0, "Play Skaktego", font, () => {
+                new Button(3/8.0,  9/24.0, 1/3.0, 1/12.0, "Spil Skaktego", font, () => {
                     BeginGaming(GameTypes.SkaktegoPrep);
                 }),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Chess", font, () => {
+                new Button(3/8.0, 12/24.0, 1/3.0, 1/12.0, " Spil Skak ", font, () => {
                     BeginGaming(GameTypes.Normal);
                 }),
-                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
+                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true)
             };
 
             gameButtons = new Button[]{
@@ -91,12 +93,12 @@ namespace skaktego {
             };
 
             endButtons = new Button[]{
-                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Rematch", font, () => {
+                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Omkamp", font, () => {
                     GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
                     StopGaming();
                     BeginGaming(gameType);
                 }),
-                new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Main Menu", font, StopGaming)
+                new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Hovedmenu", font, StopGaming)
             };
 
             background = new Texture(renderer, "background.png");
@@ -106,7 +108,7 @@ namespace skaktego {
             pieceClips = UI.GetPieceClips(pieceSprites);
 
             Color[] endColors = new Color[] { Graphics.white, Graphics.black, Graphics.gray };
-            string[] endTexts = new string[] { "White Wins", "Black Wins", "   Tie   " };
+            string[] endTexts = new string[] { "Hvid Vinder", "Sort Vinder", " Uafgjort " };
             endTextTextures = new Texture[3];
             for (int i = 0; i < endTexts.Length; i++) {
                 using (Surface textSurf = font.TextSurface(endTexts[i], endColors[i])) {
@@ -114,10 +116,10 @@ namespace skaktego {
                 }
             }
 
-            using (Surface textSurf = font.TextSurface("Next turn", Graphics.white)) {
+            using (Surface textSurf = font.TextSurface("Næste Tur", Graphics.white)) {
                 overlayText1 = new Texture(renderer, textSurf);
             }
-            using (Surface textSurf = font.TextSurface("Press any button to continiue", Graphics.white)) {
+            using (Surface textSurf = font.TextSurface("Tryk en knap for at fortsætte", Graphics.white)) {
                 overlayText2 = new Texture(renderer, textSurf);
             }
         }
@@ -176,6 +178,9 @@ namespace skaktego {
             // Update screen rect
             screenRect = renderer.OutputRect();
 
+            //Reset if the user has already pressed a button this frame
+            pressedSomething = false;
+
             // Check if the user wants to quit.
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
                 quit = true;
@@ -210,9 +215,10 @@ namespace skaktego {
 
         private void UpdateGame() {
             // If the user presses a button, unhide the screen
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN ||
-            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONDOWN)) {
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYUP ||
+            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP) && screenHidden) {
                 screenHidden = false;
+                pressedSomething = true;
             }
 
 
@@ -240,7 +246,10 @@ namespace skaktego {
 
             if (isMenuActive) {
                 foreach (Button button in buttons) {
-                    button.Update(mouseX, mouseY, boardRect, events);
+                    if (pressedSomething) {
+                        break;
+                    }
+                    pressedSomething |= button.Update(mouseX, mouseY, boardRect, events);
                 }
             } else if (!screenHidden) {
                 Rect xButtonRect = new Rect(0, 0, 0, 0);
@@ -250,7 +259,10 @@ namespace skaktego {
                 xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
                 xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
                 foreach (Button button in gameButtons) {
-                    button.Update(mouseX, mouseY, xButtonRect, events);
+                    if (pressedSomething) {
+                        break;
+                    }
+                    pressedSomething |= button.Update(mouseX, mouseY, xButtonRect, events);
                 }
 
                 if (!doneGaming) {
@@ -264,7 +276,8 @@ namespace skaktego {
                         highlightedTile = null;
                     }
                     if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
-                    && e.button.button == SDL.SDL_BUTTON_LEFT)) {
+                    && e.button.button == SDL.SDL_BUTTON_LEFT) && !pressedSomething) {
+                        pressedSomething = true;
                         // If a tile is already selected, attempt to apply the move
                         if (selectedTile.HasValue && highlightedTile.HasValue) {
                             ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
@@ -293,7 +306,10 @@ namespace skaktego {
                 }
                 if (doneGaming) {
                     foreach (Button button in endButtons) {
-                        button.Update(mouseX, mouseY, screenRect, events);
+                        if (pressedSomething) {
+                            break;
+                        }
+                        pressedSomething |= button.Update(mouseX, mouseY, screenRect, events);
                     }
                 }
             }
@@ -313,7 +329,10 @@ namespace skaktego {
             mainMenuRect.Y = (int)Math.Round((screenRect.H - mainMenuRect.H) * 0.5);
 
             foreach (Button button in menuButtons) {
-                button.Update(mouseX, mouseY, mainMenuRect, events);
+                if (pressedSomething) {
+                    break;
+                }
+                pressedSomething |= button.Update(mouseX, mouseY, mainMenuRect, events);
             }
 
             DrawMainMenu();
@@ -341,7 +360,7 @@ namespace skaktego {
             renderer.SetColor(new Color(0X111111));
             renderer.Clear();
 
-            //Screen geometry only during gameplay
+            // Screen geometry only during gameplay
             Rect boardRect = new Rect(0, 0, 0, 0);
             {
                 // Board size
@@ -350,9 +369,14 @@ namespace skaktego {
                 boardRect.H = Math.Min(screenRect.H / bs * bs, screenRect.W / bs * bs);
             }
 
-            // Draw the board
+            // Set board dimensions
             boardRect.X = (int)Math.Round((screenRect.W - boardRect.W) * 0.5);
             boardRect.Y = (int)Math.Round((screenRect.H - boardRect.H) * 0.5);
+
+            // Draw the graveyard
+            DrawGraveyard(screenRect, boardRect);
+            
+            // Draw the board
             DrawBoard(gameState.board, boardRect);
 
             // Draw the higlighted, selected and legal tiles
@@ -507,6 +531,36 @@ namespace skaktego {
         private void DrawPiece(Piece piece, Rect dst) {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void DrawGraveyard(Rect screen, Rect board) {
+            int x = 0, y = 0;
+            int i = 0, j = 0;
+            int w = (int)(Math.Min(screen.H, screen.W) / 12.0);
+            int h = w;
+            int graveSpace = board.X / w == 0? screen.W / w : board.X / w;
+            Rect square = new Rect(x,y,w,h);
+            Rect halfScreen = new Rect(0,0,screen.W/2,screen.H);
+            renderer.SetColor(new Color(0X222222FF));
+            renderer.FillRect(halfScreen);
+
+            for (int k = 0; k < gameState.taken.Count; k++) {
+                if (gameState.taken[k].Color == ChessColors.Black) {
+                    x = w * (j % graveSpace);
+                    y = (screen.H - h) - (h * (j / graveSpace));
+                    square.X = x;
+                    square.Y = y;
+                    DrawPiece(gameState.taken[k], square);
+                    j++;
+                } else {
+                    x = w * (i % graveSpace);
+                    y = h * (i / graveSpace);
+                    square.X = x;
+                    square.Y = y;
+                    DrawPiece(gameState.taken[k], square);
+                    i++;
+                }
+            }
         }
 
         private void DrawEndScreen(Rect dst) {

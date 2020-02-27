@@ -272,12 +272,17 @@ namespace skaktego {
                 return ApplySkaktegoPrepMove(gameState, move, strict);
             }
 
-            var newGameState = GameState.FromString(gameState.ToString());
-            Piece piece = newGameState.board.GetPiece(move.from);
+            Piece piece = gameState.board.GetPiece(move.from);
 
+            // If the move is useless, or no piece is selected return early
+            if (move.from == move.to || piece == null) {
+                return gameState;
+            }
+
+            var newGameState = GameState.FromString(gameState.ToString());
             if (strict) {
                 // The move is illegal if it is not the current player's turn
-                if (piece == null || piece.Color != newGameState.player) {
+                if (piece.Color != newGameState.player) {
                     return gameState;
                 }
 
