@@ -69,23 +69,23 @@ namespace skaktego {
             events = new List<SDL.SDL_Event>();
 
             buttons = new Button[]{
-                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Continiue", font, () => isMenuActive = false),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "New Game", font, () => {
+                new Button(3/8.0, 8/24.0, 1/4.0, 1/12.0, "Fortsæt", font, () => isMenuActive = false),
+                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Nyt Spil", font, () => {
                     GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
                     StopGaming();
                     BeginGaming(gameType);
                 }),
-                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Main Menu", font, StopGaming)
+                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "Hovedmenu", font, StopGaming)
             };
 
             menuButtons = new Button[]{
-                new Button(3/8.0,  8/24.0, 1/4.0, 1/12.0, "Play Skaktego", font, () => {
+                new Button(3/8.0,  9/24.0, 1/3.0, 1/12.0, "Spil Skaktego", font, () => {
                     BeginGaming(GameTypes.SkaktegoPrep);
                 }),
-                new Button(3/8.0, 11/24.0, 1/4.0, 1/12.0, "Play Chess", font, () => {
+                new Button(3/8.0, 12/24.0, 1/3.0, 1/12.0, " Spil Skak ", font, () => {
                     BeginGaming(GameTypes.Normal);
                 }),
-                new Button(3/8.0, 14/24.0, 1/4.0, 1/12.0, "  Exit  ", font, () => quit = true)
+                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true)
             };
 
             gameButtons = new Button[]{
@@ -93,12 +93,12 @@ namespace skaktego {
             };
 
             endButtons = new Button[]{
-                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Rematch", font, () => {
+                new Button(3/12.0, 14/24.0, 1/6.0, 1/12.0, "Omkamp", font, () => {
                     GameTypes gameType = gameState.gameType == GameTypes.Normal ? GameTypes.Normal : GameTypes.SkaktegoPrep;
                     StopGaming();
                     BeginGaming(gameType);
                 }),
-                new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Main Menu", font, StopGaming)
+                new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Hovedmenu", font, StopGaming)
             };
 
             background = new Texture(renderer, "background.png");
@@ -108,7 +108,7 @@ namespace skaktego {
             pieceClips = UI.GetPieceClips(pieceSprites);
 
             Color[] endColors = new Color[] { Graphics.white, Graphics.black, Graphics.gray };
-            string[] endTexts = new string[] { "White Wins", "Black Wins", "   Tie   " };
+            string[] endTexts = new string[] { "Hvid Vinder", "Sort Vinder", " Uafgjort " };
             endTextTextures = new Texture[3];
             for (int i = 0; i < endTexts.Length; i++) {
                 using (Surface textSurf = font.TextSurface(endTexts[i], endColors[i])) {
@@ -116,10 +116,10 @@ namespace skaktego {
                 }
             }
 
-            using (Surface textSurf = font.TextSurface("Next turn", Graphics.white)) {
+            using (Surface textSurf = font.TextSurface("Næste Tur", Graphics.white)) {
                 overlayText1 = new Texture(renderer, textSurf);
             }
-            using (Surface textSurf = font.TextSurface("Press any button to continiue", Graphics.white)) {
+            using (Surface textSurf = font.TextSurface("Tryk en knap for at fortsætte", Graphics.white)) {
                 overlayText2 = new Texture(renderer, textSurf);
             }
         }
