@@ -186,22 +186,6 @@ namespace skaktego {
             // Check if the user wants to quit.
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_QUIT)) {
                 quit = true;
-            } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_q)) {
-                quit = true;
-            }
-
-            // Check if the user is done preparing in skaktego
-            if (gameState != null &&
-            gameState.gameType == GameTypes.SkaktegoPrep &&
-            events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_RETURN)) {
-
-                if (storedMove.HasValue) {
-                    storedMove.TakeMVar(x => x);
-                }
-                storedMove.Var = Game.DONE_PREPARING_MOVE;
-
             }
 
 
@@ -218,18 +202,35 @@ namespace skaktego {
         private void UpdateGame() {
             // If the user presses a button, unhide the screen
             if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYUP ||
-            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP) && screenHidden) {
+            e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP) &&
+            screenHidden &&
+            !pressedSomething) {
                 screenHidden = false;
                 pressedSomething = true;
             }
 
+            // Check if the user is done preparing in skaktego
+            if (gameState.gameType == GameTypes.SkaktegoPrep &&
+            events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYUP &&
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_RETURN) &&
+            !pressedSomething) {
+
+                if (storedMove.HasValue) {
+                    storedMove.TakeMVar(x => x);
+                }
+                storedMove.Var = Game.DONE_PREPARING_MOVE;
+
+                pressedSomething = true;
+            }
 
             int mouseX, mouseY;
             SDL.SDL_GetMouseState(out mouseX, out mouseY);
 
-            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYDOWN &&
-          e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE)) {
+            if (events.Any(e => e.type == SDL.SDL_EventType.SDL_KEYUP &&
+            e.key.keysym.sym == SDL.SDL_Keycode.SDLK_ESCAPE) &&
+            !pressedSomething) {
                 isMenuActive = !isMenuActive;
+                pressedSomething = true;
             }
 
             Rect boardRect = new Rect(0, 0, 0, 0);
@@ -277,8 +278,9 @@ namespace skaktego {
                     } else {
                         highlightedTile = null;
                     }
-                    if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
-                    && e.button.button == SDL.SDL_BUTTON_LEFT) && !pressedSomething) {
+                    if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
+                    e.button.button == SDL.SDL_BUTTON_LEFT) &&
+                    !pressedSomething) {
                         pressedSomething = true;
                         // If a tile is already selected, attempt to apply the move
                         if (selectedTile.HasValue && highlightedTile.HasValue) {
@@ -300,10 +302,12 @@ namespace skaktego {
                             }
                         }
                         SelectTile(gameState, highlightedTile);
-                    } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP
-                    && e.button.button == SDL.SDL_BUTTON_RIGHT)) {
+                    } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
+                    e.button.button == SDL.SDL_BUTTON_RIGHT) &&
+                    !pressedSomething) {
                         selectedTile = null;
                         legalMoves = null;
+                        pressedSomething = true;
                     }
                 }
                 if (doneGaming) {
