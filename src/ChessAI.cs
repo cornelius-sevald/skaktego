@@ -55,11 +55,8 @@ namespace skaktego {
         }
 
         public ChessMove GetMove(ChessColors color) {
-            if (color == ChessColors.White) {
-                MiniMax(gameState, SearchDepth, true);
-            } else {
-                MiniMax(gameState, SearchDepth, false);
-            }
+            bool maximizingPlayer = color == ChessColors.White;
+            MiniMax(gameState, SearchDepth, double.NegativeInfinity, double.PositiveInfinity, maximizingPlayer);
 
             if (!bestMove.HasValue) {
                 throw new InvalidOperationException("No best move found");
@@ -68,7 +65,12 @@ namespace skaktego {
             return bestMove.Value;
         }
 
-        private double MiniMax(GameState gameState, int depth, bool maximizingPlayer) {
+        /// <summary>
+        /// The minimax algorithm with alpha-beta pruning
+        /// 
+        /// <para>This method updates the private <c>bestMove</c> field.</para>
+        /// </summary>
+        private double MiniMax(GameState gameState, int depth, double alpha, double beta, bool maximizingPlayer) {
             // Return early if reached max depth, or the game is over
             bool gameOver = Engine.IsGameOver(gameState);
             if (depth == 0 || gameOver) {
@@ -87,13 +89,22 @@ namespace skaktego {
                     GameState newGameStage = Engine.ApplyMove(gameState, move, false);
                     // Recursively call the minimax algorithm with the new state,
                     // decremented depth and opposite maximizing player.
-                    double eval = MiniMax(newGameStage, depth - 1, false);
+                    double eval = MiniMax(newGameStage, depth - 1, alpha, beta, false);
                     // Check if eval is greater than maxEval
                     if (eval > maxEval) {
                         maxEval = eval;
                         if (depth == SearchDepth) {
                             bestMove = move;
                         }
+                    }
+
+                    // Update the alpha field
+                    if (eval > alpha) {
+                        alpha = eval;
+                    }
+                    // Prune the search tree
+                    if (beta <= alpha) {
+                        break;
                     }
                 }
                 return maxEval;
@@ -106,13 +117,22 @@ namespace skaktego {
                     GameState newGameStage = Engine.ApplyMove(gameState, move, false);
                     // Recursively call the minimax algorithm with the new state,
                     // decremented depth and opposite maximizing player.
-                    double eval = MiniMax(newGameStage, depth - 1, true);
+                    double eval = MiniMax(newGameStage, depth - 1, alpha, beta, true);
                     // Check if eval is lesser than maxEval
                     if (eval < minEval) {
                         minEval = eval;
                         if (depth == SearchDepth) {
                             bestMove = move;
                         }
+                    }
+
+                    // Update the beta field
+                    if (eval < beta) {
+                        beta = eval;
+                    }
+                    // Prune the search tree
+                    if (beta <= alpha) {
+                        break;
                     }
                 }
                 return minEval;
