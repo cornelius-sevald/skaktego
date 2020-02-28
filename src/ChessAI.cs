@@ -28,8 +28,7 @@ namespace skaktego {
         /// </summary>
         public int SearchDepth { get; private set; }
 
-        public ChessColors color = ChessColors.White;
-
+        private GameState gameState = null;
         private Nullable<ChessMove> bestMove = null;
         private Random rand;
 
@@ -50,14 +49,12 @@ namespace skaktego {
             this.rand = rand;
         }
 
-        /// <summary>
-        /// Initializes internal state needed to play
-        /// </summary>
-        public void GameStart(GameState _, ChessColors color) {
-            this.color = color;
+
+        public void SetGameState(GameState gameState) {
+            this.gameState = gameState;
         }
 
-        public ChessMove GetMove(GameState gameState) {
+        public ChessMove GetMove(ChessColors color) {
             if (color == ChessColors.White) {
                 MiniMax(gameState, SearchDepth, true);
             } else {

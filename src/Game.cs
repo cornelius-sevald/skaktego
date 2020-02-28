@@ -44,8 +44,6 @@ namespace skaktego {
                 GameState blackObfGameState = GameState.FromString(startState.ToString());
                 whiteObfGameState.Obfuscate(ChessColors.White);
                 blackObfGameState.Obfuscate(ChessColors.Black);
-                whitePlayer.GameStart(whiteObfGameState, ChessColors.White);
-                blackPlayer.GameStart(blackObfGameState, ChessColors.Black);
             }
 
             bool checkMate = Engine.IsCheckmate(startState);
@@ -55,27 +53,25 @@ namespace skaktego {
             GameState gameState = GameState.FromString(startState.ToString());
             while (!checkMate && !kingTaken && !tie && !quit) {
                 // Obfuscated version of the board, if playing skaktego.
-                // Otherwise just a board.
-                GameState obfGameState;
+                // Otherwise just the normal game state.
+                GameState whiteObfGameState = GameState.FromString(gameState.ToString());
+                GameState blackObfGameState = GameState.FromString(gameState.ToString());;
+
+                if (gameType == GameTypes.Skaktego || gameType == GameTypes.SkaktegoPrep) {
+                    whiteObfGameState.Obfuscate(ChessColors.White);
+                    blackObfGameState.Obfuscate(ChessColors.Black);
+                }
+
+                whitePlayer.SetGameState(whiteObfGameState);
+                blackPlayer.SetGameState(blackObfGameState);
+
                 ChessMove move;
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        if (gameType == GameTypes.Normal) {
-                            obfGameState = gameState;
-                        } else {
-                            obfGameState = GameState.FromString(gameState.ToString());
-                            obfGameState.Obfuscate(gameState.player);
-                        }
-                        move = blackPlayer.GetMove(obfGameState);
+                        move = blackPlayer.GetMove(ChessColors.Black);
                         break;
                     default:
-                        if (gameType == GameTypes.Normal) {
-                            obfGameState = gameState;
-                        } else {
-                            obfGameState = GameState.FromString(gameState.ToString());
-                            obfGameState.Obfuscate(gameState.player);
-                        }
-                        move = whitePlayer.GetMove(obfGameState);
+                        move = whitePlayer.GetMove(ChessColors.White);
                         break;
                 }
 

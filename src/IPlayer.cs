@@ -3,18 +3,17 @@ namespace skaktego {
     public interface IPlayer {
 
         /// <summary>
-        /// Allow the player to initialize
+        /// Set the game state for the player to see
         /// </summary>
-        /// <param name="gameState">The starting game state</param>
-        /// <param name="color">The players color</param>
-        void GameStart(GameState gameState, ChessColors color);
+        /// <param name="gameState"></param>
+        void SetGameState(GameState gameState);
 
         /// <summary>
         /// Get a move from the player
         /// </summary>
-        /// <param name="gameState">The current game state</param>
+        /// <param name="playerColor">The color of the player</param>
         /// <returns></returns>
-        ChessMove GetMove(GameState gameState);
+        ChessMove GetMove(ChessColors playerColor);
     }
 
 }

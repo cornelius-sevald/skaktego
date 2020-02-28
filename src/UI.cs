@@ -38,7 +38,10 @@ namespace skaktego {
         private bool screenHidden = false;
         //Has the user already pressed something this frame
         private bool pressedSomething = false;
+        // The color of the last move's player
         private ChessColors lastPlayer = ChessColors.White;
+        // The color of the current player
+        private ChessColors playerColor = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
         private Button[] gameButtons;
@@ -124,25 +127,24 @@ namespace skaktego {
             }
         }
 
-        public void GameStart(GameState gameState, ChessColors _) {
-            if (!isGaming) {
-                this.gameState = gameState;
-            }
-            lastPlayer = gameState.player;
+        public void SetGameState(GameState gameState) {
+            this.gameState = gameState;
+        }
+
+        public ChessMove GetMove(ChessColors color) {
+            this.playerColor = color;
+            return storedMove.Var;
+        }
+
+        private void BeginGaming(GameTypes gameType) {
             isGaming = true;
             isMenuActive = false;
             screenHidden = false;
             doneGaming = false;
-        }
+            highlightedTile = null;
+            selectedTile = null;
+            legalMoves.Clear();
 
-        public ChessMove GetMove(GameState gameState) {
-            this.gameState = gameState;
-            ChessMove move = storedMove.Var;
-            this.gameState = Engine.ApplyMove(gameState, move, false);
-            return move;
-        }
-
-        private void BeginGaming(GameTypes gameType) {
             storedMove = new MVar<ChessMove>();
             ChessAI ai = new ChessAI(3);
             game = new Game(this, ai, gameType);
@@ -159,7 +161,7 @@ namespace skaktego {
             isGaming = false;
             highlightedTile = null;
             selectedTile = null;
-            legalMoves = null;
+            legalMoves.Clear();
             if (game != null) {
                 game.quit = true;
             }
@@ -282,11 +284,14 @@ namespace skaktego {
                         highlightedTile = null;
                     }
                     if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
-                    e.button.button == SDL.SDL_BUTTON_LEFT) &&
-                    !pressedSomething) {
+                        e.button.button == SDL.SDL_BUTTON_LEFT)                       &&
+                        !pressedSomething
+                    ) {
                         pressedSomething = true;
                         // If a tile is already selected, attempt to apply the move
-                        if (selectedTile.HasValue && highlightedTile.HasValue) {
+                        if (selectedTile.HasValue    &&
+                            highlightedTile.HasValue
+                        ) {
                             ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
                             bool isMoveLegal = false;
                             foreach (BoardPosition legalPos in legalMoves) {
@@ -306,10 +311,11 @@ namespace skaktego {
                         }
                         SelectTile(gameState, highlightedTile);
                     } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
-                    e.button.button == SDL.SDL_BUTTON_RIGHT) &&
-                    !pressedSomething) {
+                               e.button.button == SDL.SDL_BUTTON_RIGHT)                      &&
+                               !pressedSomething
+                    ) {
                         selectedTile = null;
-                        legalMoves = null;
+                        legalMoves.Clear();
                         pressedSomething = true;
                     }
                 }
@@ -349,10 +355,12 @@ namespace skaktego {
 
         private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
             selectedTile = highlightedTile;
-            if (selectedTile.HasValue) {
+            if (selectedTile.HasValue &&
+                playerColor == gameState.player
+            ) {
                 legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
             } else {
-                legalMoves = null;
+                legalMoves.Clear();
             }
         }
 
