@@ -22,12 +22,14 @@ namespace skaktego {
         private Texture background;
         private Texture menuLogo;
         private Texture menuBG;
+        private Texture aiCheckmark;
         private Texture pieceSprites;
         private Texture[] endTextTextures;
         private Texture overlayText1;
         private Texture overlayText2;
         private Texture skaktegoPrepText1;
         private Texture skaktegoPrepText2;
+        private Texture menuAIText;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
         private Nullable<BoardPosition> selectedTile = null;
@@ -40,6 +42,7 @@ namespace skaktego {
         private bool screenHidden = false;
         //Has the user already pressed something this frame
         private bool pressedSomething = false;
+        private bool aiButtonActive = false;
         private ChessColors lastPlayer = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
@@ -87,7 +90,8 @@ namespace skaktego {
                 new Button(3/8.0, 12/24.0, 1/3.0, 1/12.0, " Spil Skak ", font, () => {
                     BeginGaming(GameTypes.Normal);
                 }),
-                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true)
+                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true),
+                new Button(1/4.0, 12/24.0, 1/12.0, 1/12.0, " ", font, () => aiButtonActive = !aiButtonActive)
             };
 
             gameButtons = new Button[]{
@@ -106,6 +110,7 @@ namespace skaktego {
             background = new Texture(renderer, "background.png");
             menuLogo = new Texture(renderer, "skaktegoLogo.png");
             menuBG = new Texture(renderer, "skaktegoMain.png");
+            aiCheckmark = new Texture(renderer, "checkmark.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
 
@@ -129,6 +134,9 @@ namespace skaktego {
             }
             using (Surface textSurf = font.TextSurface("for at skifte deres plads, tryk enter når du er færdig.", Graphics.white)) {
                 skaktegoPrepText2 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("AI", Graphics.black)) {
+                menuAIText = new Texture(renderer, textSurf);
             }
         }
 
@@ -460,6 +468,22 @@ namespace skaktego {
             // Draw the buttons in the main menu
             foreach (Button button in menuButtons) {
                 button.Draw(renderer, mainMenuRect);
+            }
+
+            Rect aiTextRect = new Rect(
+                (int)Math.Round(1/4.0 * mainMenuRect.W + mainMenuRect.X),
+                (int)Math.Round(10/24.0 * mainMenuRect.H + mainMenuRect.Y),
+                (int)Math.Round(1/12.0 * mainMenuRect.W),
+                (int)Math.Round(1/12.0 * mainMenuRect.H));
+            renderer.RenderTexture(menuAIText, aiTextRect, null);
+
+            if (aiButtonActive) {
+                Rect aiRect = new Rect(
+                    (int)Math.Round(1/4.0 * mainMenuRect.W + mainMenuRect.X + 0.5 * (1/12.0 * mainMenuRect.H - 1/14.0 * mainMenuRect.H)),
+                    (int)Math.Round(12/24.0 * mainMenuRect.H + mainMenuRect.Y + 0.5 * (1/12.0 * mainMenuRect.H - 1/14.0 * mainMenuRect.H)),
+                    (int)Math.Round(1/14.0 * mainMenuRect.W),
+                    (int)Math.Round(1/14.0 * mainMenuRect.H));
+                renderer.RenderTexture(aiCheckmark, aiRect, null);
             }
 
             renderer.Present();
