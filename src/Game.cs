@@ -94,32 +94,26 @@ namespace skaktego {
             GameResults results = GameResults.Quit;
 
             if (quit) {
-                Console.WriteLine("En gamer har stoppet spillet 😳");
                 results = GameResults.Quit;
             } else if (checkMate) {
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        Console.WriteLine("Hvid vinder");
                         results = GameResults.WhiteWin;
                         break;
                     default:
-                        Console.WriteLine("Sort vinder");
                         results = GameResults.BlackWin;
                         break;
                 }
             } else if (kingTaken) {
                 switch (gameState.taken.Find(p => p.Type == PieceTypes.King).Color) {
                     case ChessColors.Black:
-                        Console.WriteLine("Hvid vinder");
                         results = GameResults.WhiteWin;
                         break;
                     default:
-                        Console.WriteLine("Sort vinder");
                         results = GameResults.BlackWin;
                         break;
                 }
             } else if (tie) {
-                Console.WriteLine("Det står lige, gamere..");
                 results = GameResults.Tie;
             }
 
