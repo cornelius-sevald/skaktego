@@ -106,6 +106,17 @@ namespace skaktego {
                                 break;
                             }
                         }
+                        if (pos.column + 1 == gameState.castling.whiteRightRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column + 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                whiteRightRookCastle = false;
+                            }
+                        } else if (pos.column - 1 == gameState.castling.whiteRightRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column - 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                whiteRightRookCastle = false;
+                            }
+                        }
                     }
 
                     if (gameState.castling.whiteQueen && pos.row == gameState.castling.whiteLeftRook.row) {
@@ -124,6 +135,17 @@ namespace skaktego {
                             if (gameState.board.IsTileOccupied(here) && here != gameState.castling.whiteLeftRook) {
                                 whiteLeftRookCastle = false;
                                 break;
+                            }
+                        }
+                        if (pos.column + 1 == gameState.castling.whiteLeftRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column + 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                whiteLeftRookCastle = false;
+                            }
+                        } else if (pos.column - 1 == gameState.castling.whiteLeftRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column - 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                whiteLeftRookCastle = false;
                             }
                         }
                     }
@@ -146,6 +168,17 @@ namespace skaktego {
                                 break;
                             }
                         }
+                        if (pos.column + 1 == gameState.castling.blackRightRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column + 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                blackRightRookCastle = false;
+                            }
+                        } else if (pos.column - 1 == gameState.castling.blackRightRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column - 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                blackRightRookCastle = false;
+                            }
+                        }
                     }
 
                     if (gameState.castling.blackQueen && pos.row == gameState.castling.blackLeftRook.row) {
@@ -164,6 +197,17 @@ namespace skaktego {
                             if (gameState.board.IsTileOccupied(here) && here != gameState.castling.blackLeftRook) {
                                 blackLeftRookCastle = false;
                                 break;
+                            }
+                        }
+                        if (pos.column + 1 == gameState.castling.blackLeftRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column + 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                blackLeftRookCastle = false;
+                            }
+                        } else if (pos.column - 1 == gameState.castling.blackLeftRook.column) {
+                            Piece kingPosPiece = gameState.board.GetPiece(new BoardPosition(pos.column - 2, pos.row));
+                            if (kingPosPiece != null && kingPosPiece.Color == gameState.player) {
+                                blackLeftRookCastle = false;
                             }
                         }
                     }
@@ -342,16 +386,17 @@ namespace skaktego {
 
             // Handles the kings moves, either if castling or moving normally
             if (piece.Type == PieceTypes.King) {
+                BoardPosition newKingPosition;
 
                 if (move.to == gameState.castling.whiteLeftRook && gameState.castling.whiteQueen) {
                     //castling to the white king side
                     if (move.from.column < gameState.castling.whiteLeftRook.column) {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column + 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.whiteLeftRook);
                         newGameState.board.SetPiece(null, gameState.castling.whiteLeftRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
                     } else {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column - 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.whiteLeftRook);
                         newGameState.board.SetPiece(null, gameState.castling.whiteLeftRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
@@ -360,12 +405,12 @@ namespace skaktego {
                 } else if (move.to == gameState.castling.whiteRightRook && gameState.castling.whiteKing) {
                     //castling to the white queen side
                     if (move.from.column < gameState.castling.whiteRightRook.column) {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column + 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.whiteRightRook);
                         newGameState.board.SetPiece(null, gameState.castling.whiteRightRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
                     } else {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column - 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.whiteRightRook);
                         newGameState.board.SetPiece(null, gameState.castling.whiteRightRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
@@ -374,12 +419,12 @@ namespace skaktego {
                 } else if (move.to == gameState.castling.blackLeftRook && gameState.castling.blackQueen) {
                     //castling to the black king side
                     if (move.from.column < gameState.castling.blackLeftRook.column) {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column + 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.blackLeftRook);
                         newGameState.board.SetPiece(null, gameState.castling.blackLeftRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
                     } else {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column - 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.blackLeftRook);
                         newGameState.board.SetPiece(null, gameState.castling.blackLeftRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
@@ -388,20 +433,22 @@ namespace skaktego {
                 } else if (move.to == gameState.castling.blackRightRook && gameState.castling.blackKing) {
                     //castling to the black queen side
                     if (move.from.column < gameState.castling.blackRightRook.column) {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column + 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column + 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.blackRightRook);
                         newGameState.board.SetPiece(null, gameState.castling.blackRightRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column + 1, move.from.row));
                     } else {
-                        newGameState.board.SetPiece(piece, new BoardPosition(move.from.column - 2, move.from.row));
+                        newKingPosition = new BoardPosition(move.from.column - 2, move.from.row);
                         Piece rook = newGameState.board.GetPiece(gameState.castling.blackRightRook);
                         newGameState.board.SetPiece(null, gameState.castling.blackRightRook);
                         newGameState.board.SetPiece(rook, new BoardPosition(move.from.column - 1, move.from.row));
                     }
 
                 } else {
-                    newGameState.board.SetPiece(piece, move.to);
+                    newKingPosition = move.to;
                 }
+                captured = newGameState.board.CapturePiece(newKingPosition);
+                newGameState.board.SetPiece(piece, newKingPosition);
                 newGameState.board.SetPiece(null, move.from);
                 piece.hasMoved = true;
             }
