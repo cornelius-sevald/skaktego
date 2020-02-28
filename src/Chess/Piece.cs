@@ -2,26 +2,61 @@ using System;
 
 namespace skaktego.Chess {
 
+    /// <summary>
+    /// The different piece types
+    /// </summary>
+    /// <para>
+    /// The 'Unkown' type is used in skaktego
+    /// to hide the enemy pieces.
+    /// </para>
     public enum PieceTypes {
         King, Queen, Bishop,
         Knight, Rook, Pawn,
         Unknown
     }
 
+    /// <summary>
+    /// Class representing a chess piece
+    /// </summary>
     public class Piece {
+
+        /// <summary>
+        /// The amount of piece colors: White and black
+        /// </summary>
         public const int PIECE_COLOR_COUNT = 2;
+
+        /// <summary>
+        /// The amount of piece types
+        /// </summary>
         public const int PIECE_TYPE_COUNT = 7;
 
+        /// <summary>
+        /// The color of the piece
+        /// </summary>
         public ChessColors Color { get; private set; }
+
+        /// <summary>
+        /// The type of piece
+        /// </summary>
         public PieceTypes Type { get; private set; }
 
-        // This is only useful for pawns,
-        // and will be ignored for all other pieces
+        /// <summary>
+        /// Has the piece moved?
+        /// </summary>
+        /// <para>
+        /// This is useful for pawns, as they can advance two squares
+        /// if they have not moved yet.
+        /// </para>
         public bool hasMoved = true;
 
         /// <summary>
-        /// Create a new piece from a character.
+        /// Create a new piece from a character
         /// </summary>
+        /// <para>
+        /// The pieces follow FEN, except for unkown pieces that are labeled 'U',
+        /// and pawns that have not moved that are labeled 'ℙ' and '℗'.
+        /// </para>
+        /// <seealso>skaktego.Chess.Piece.ToChar</seealso>
         /// <param name="c">The character representing the piece.</param>
         public static Piece FromChar(char c) {
             ChessColors color;
@@ -67,7 +102,7 @@ namespace skaktego.Chess {
 
 
         /// <summary>
-        /// Create a new piece given a color and type.
+        /// Create a new piece given a color and type
         /// </summary>
         /// <param name="color">The color the piece belongs to.</param>
         /// <param name="type">The type of the piece.</param>
@@ -78,6 +113,14 @@ namespace skaktego.Chess {
         }
 
 
+        /// <summary>
+        /// Convert a piece to a character
+        /// </summary>
+        /// <para>
+        /// The pieces follow FEN, except for unkown pieces that are labeled 'U',
+        /// and pawns that have not moved that are labeled 'ℙ' and '℗'.
+        /// </para>
+        /// <seealso>skaktego.Chess.Piece.FromChar</seealso>
         public char ToChar() {
 
             // Check for pawn special case
@@ -116,8 +159,6 @@ namespace skaktego.Chess {
                     throw new InvalidOperationException("Piece type " + Type + " not recognized.");
             }
 
-            // TODO: Throw exception if c == '\0'.
-
             if (Color == ChessColors.White) {
                 c = Char.ToUpper(c);
             }
@@ -125,10 +166,21 @@ namespace skaktego.Chess {
             return c;
         }
 
+        /// <summary>
+        /// Convert a piece to a string
+        /// </summary>
+        /// <seealso>skaktego.Chess.Piece.ToChar</seealso>
         public override string ToString() {
             return ToChar().ToString();
         }
 
+        /// <summary>
+        /// Promote a piece to another type
+        /// </summary>
+        /// <para>
+        /// This is mostly used for queening.
+        /// </para>
+        /// <param name="pieceType">The piece's new type</param>
         public void Promote(PieceTypes pieceType) {
             Type = pieceType;
         }

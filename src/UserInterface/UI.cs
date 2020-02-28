@@ -10,6 +10,15 @@ using skaktego.Chess;
 
 namespace skaktego.UserInterace {
 
+    /// <summary>
+    /// The UI singleton class
+    /// 
+    /// This class takes care of:
+    ///  - Initializing graphics
+    ///  - Opening the game and choosing the game type (from a menu)
+    ///  - Playing the game, collecting user inputs and passing them to the <c>Game</c> class
+    ///  - Other events, such as quitting the game
+    /// </summary>
     public sealed class UI : IPlayer {
         // Screen size
         private const int SCREEN_WIDTH = 800;
@@ -40,30 +49,52 @@ namespace skaktego.UserInterace {
         private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
         private Rect screenRect = null;
+
+        // True when the game menu (not main menu!) is active
         private bool isMenuActive = false;
+        // True when currently playing the game, or the game is over
         private bool isGaming = false;
+        // True when the game is over
         private bool doneGaming = false;
+        // True when the screen is hidden. This is used to play 2-player skaktego
         private bool screenHidden = false;
+        // True when the AI is playing, i.e. not 2-player
         private bool aiPlaying = true;
-        //Has the user already pressed something this frame
+        // True when the user has interacted with something.
+        // This prevents one button-press to cause multiple things.
         private bool pressedSomething = false;
         // The color of the last move's player
         private ChessColors lastPlayer = ChessColors.White;
         // The color of the current player
         private ChessColors playerColor = ChessColors.White;
+        // Buttons in the game menu
         private Button[] buttons;
+        // Buttons in the main menu
         private Button[] menuButtons;
+        // Buttons in the game
         private Button[] gameButtons;
+        // Buttons when the game has ended
         private Button[] endButtons;
+        // The result of the game. Only valid when the game is over
         private GameResults gameResult = GameResults.Tie;
 
+        // An MVar that can hold a move.
+        // This allows a Game instance to ask for a move,
+        // while not blocking the UI updating and drawing
         private MVar<ChessMove> storedMove;
+        // The current state of the game
         private GameState gameState = null;
+        // The game instance
         private Game game = null;
+        // The thread that the game instance runs on
         private Thread gameThread;
 
+        // True when the user wants to quit
         public bool quit = false;
 
+        /// <summary>
+        /// Private contructor to allow UI to be a singleton
+        /// </summary>
         UI() {
             Graphics.InitGraphics();
 
@@ -147,10 +178,19 @@ namespace skaktego.UserInterace {
             }
         }
 
+        /// <summary>
+        /// Set the state of the game in the UI
+        /// </summary>
         public void SetGameState(GameState gameState) {
             this.gameState = gameState;
         }
 
+        /// <summary>
+        /// Get a move from the user
+        /// </summary>
+        /// <param name="gameState">The current state of the game</param>
+        /// <param name="color">The color of the player</param>
+        /// <returns></returns>
         public ChessMove GetMove(GameState gameState, ChessColors color) {
             this.gameState = gameState;
             this.playerColor = color;
@@ -159,6 +199,10 @@ namespace skaktego.UserInterace {
             return move;
         }
 
+        /// <summary>
+        /// Start a game instance, and run it
+        /// </summary>
+        /// <param name="gameType">The game mode</param>
         private void BeginGaming(GameTypes gameType) {
             isGaming = true;
             isMenuActive = false;
@@ -210,6 +254,9 @@ namespace skaktego.UserInterace {
             }
         }
 
+        /// <summary>
+        /// Update and draw the UI
+        /// </summary>
         public void Update() {
             PollEvents();
 
@@ -589,6 +636,9 @@ namespace skaktego.UserInterace {
             renderer.RenderTexture(pieceSprites, dst, clip);
         }
 
+        /// <summary>
+        /// Draw a button in the corner of the screen that opens the menu
+        /// </summary>
         private void DrawXButton() {
             //Draw game button
             Rect xButtonRect = new Rect(0, 0, 0, 0);
@@ -615,6 +665,9 @@ namespace skaktego.UserInterace {
             renderer.FillRect(xButtonRect);
         }
 
+        /// <summary>
+        /// Draw the taken pieces
+        /// </summary>
         private void DrawGraveyard(Rect screen, Rect board) {
             int x = 0, y = 0;
             int i = 0, j = 0;
@@ -767,12 +820,20 @@ namespace skaktego.UserInterace {
             return clips;
         }
 
+        /// <summary>
+        /// Stop the game and quit the UI
+        /// </summary>
         public void Quit() {
             StopGaming();
             Graphics.QuitGraphics();
             instance = null;
         }
 
+        /// <summary>
+        /// Get the current single instance of the UI.
+        /// If no instance exists, create one.
+        /// </summary>
+        /// <value></value>
         public static UI Instance {
             get {
                 lock (padlock) {

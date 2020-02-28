@@ -1,5 +1,12 @@
 namespace skaktego.Chess {
 
+    /// <summary>
+    /// Generic player interface.
+    /// </summary>
+    /// <para>
+    /// If a class implements this interface,
+    /// it will be able to play chess using the Game class.
+    /// </para>
     public interface IPlayer {
 
         /// <summary>

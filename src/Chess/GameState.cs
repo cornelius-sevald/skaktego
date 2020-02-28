@@ -15,7 +15,9 @@ namespace skaktego.Chess {
         Normal, Skaktego, SkaktegoPrep
     }
 
-
+    /// <summary>
+    /// Information used to castle
+    /// </summary>
     public struct CastlingInfo {
         public bool whiteKing;
         public bool whiteQueen;
@@ -80,16 +82,55 @@ namespace skaktego.Chess {
         }
     }
 
+    /// <summary>
+    /// Complete state of a chess or skaktego game
+    /// </summary>
     public class GameState {
+
+        /// <summary>
+        /// The game board
+        /// </summary>
         public Board board;
+
+        /// <summary>
+        /// List of pieces that have been taken
+        /// </summary>
         public List<Piece> taken;
+
+        /// <summary>
+        /// The current turn's player
+        /// </summary>
         public ChessColors player;
+
+        /// <summary>
+        /// Castling information
+        /// </summary>
         public CastlingInfo castling;
+
+        /// <summary>
+        /// Potential en passant position
+        /// </summary>
         public Nullable<BoardPosition> enPassant;
+
+        /// <summary>
+        /// Half-moves since last capture or pawn move
+        /// </summary>
         public int halfmoveClock = 0;
+
+        /// <summary>
+        /// Total full-moves
+        /// </summary>
         public int fullmoveClock = 1;
+
+        /// <summary>
+        /// The game mode
+        /// </summary>
         public GameTypes gameType;
 
+        /// <summary>
+        /// Construct a game state given only a board
+        /// </summary>
+        /// <param name="board">The game board</param>
         public GameState(Board board) {
             this.board = board;
             this.taken = new List<Piece>();
@@ -104,6 +145,17 @@ namespace skaktego.Chess {
             gameType = GameTypes.Normal;
         }
 
+        /// <summary>
+        /// Construct a game state given all of its parameters
+        /// </summary>
+        /// <param name="board"></param>
+        /// <param name="taken"></param>
+        /// <param name="player"></param>
+        /// <param name="castling"></param>
+        /// <param name="enPassant"></param>
+        /// <param name="halfmoveClock"></param>
+        /// <param name="fullmoveClock"></param>
+        /// <param name="gameType"></param>
         public GameState(Board board, List<Piece> taken, ChessColors player,
         CastlingInfo castling, Nullable<BoardPosition> enPassant,
         int halfmoveClock, int fullmoveClock, GameTypes gameType) {
@@ -149,10 +201,11 @@ namespace skaktego.Chess {
 
         /// <summary>
         /// Replace all unknown pieces with a random piece
-        /// 
-        /// <para>This method never replaces a piece with a king.
-        /// This is due to a bug in <c>ChessAI</c></para>
         /// </summary>
+        /// <para>
+        /// This method never replaces a piece with a king.
+        /// This is due to a bug in <c>ChessAI</c>
+        /// </para>
         /// <param name="rand">The random number generator</param>
         public void DeObfuscate(Random rand) {
             for (int i = 0; i < board.Size; i++) {
@@ -166,6 +219,14 @@ namespace skaktego.Chess {
             }
         }
 
+        /// <summary>
+        /// Convert a string to a game state
+        /// </summary>
+        /// <para>
+        /// The string notation is very close to FEN,
+        /// but modified to accomidate for skaktego rules.
+        /// </para>
+        /// <seealso>skaktego.Chess.GameState.ToString</seealso>
         public static GameState FromString(string stateStr) {
             string[] splitStr = stateStr.Split(' ');
             var boardStr     = splitStr[0];
@@ -220,6 +281,14 @@ namespace skaktego.Chess {
             fullmoveClock, gameType);
         }
 
+        /// <summary>
+        /// Convert the game state to a string
+        /// </summary>
+        /// <para>
+        /// The string notation is very close to FEN,
+        /// but modified to accomidate for skaktego rules.
+        /// </para>
+        /// <seealso>skaktego.Chess.GameState.FromString</seealso>
         public override string ToString() {
             string boardStr = board.ToString();
             string takenStr = "";

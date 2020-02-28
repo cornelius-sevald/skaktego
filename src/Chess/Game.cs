@@ -3,30 +3,67 @@ using System.Linq;
 
 namespace skaktego.Chess {
 
+    /// <summary>
+    /// The different outcomes of a game
+    /// </summary>
     public enum GameResults {
         WhiteWin, BlackWin, Tie, Quit
     }
 
+    /// <summary>
+    /// The game class is responsible for asking the players for moves,
+    /// and then using those moves to advance the game state.
+    /// </summary>
     public class Game {
-        // Move signaling that the player is done preparing in skaktego
-        public static readonly ChessMove DONE_PREPARING_MOVE = new ChessMove( new BoardPosition(-1, -1)
-                                                                            , new BoardPosition(-1, -1));
+        /// <summary>
+        /// Special move signaling that the player is done preparing in skaktego
+        /// </summary>
+        public static readonly ChessMove DONE_PREPARING_MOVE =
+                                         new ChessMove(new BoardPosition(-1, -1)
+                                                     , new BoardPosition(-1, -1));
+
         const string normalStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 s";
         const string skaktegoStartStateStr = "rnbqkbnr/℗℗℗℗℗℗℗℗/8/8/8/8/ℙℙℙℙℙℙℙℙ/RNBQKBNR - w KQkq:a1:h1:a8:h8 - 0 1 stp";
 
+        /// <summary>
+        /// The white player
+        /// </summary>
         public IPlayer whitePlayer;
+
+        /// <summary>
+        /// The black player
+        /// </summary>
         public IPlayer blackPlayer;
+
+        /// <summary>
+        /// The game mode
+        /// </summary>
         public GameTypes gameType;
+
+        /// <summary>
+        /// Has a player quit the game?
+        /// </summary>
         public bool quit = false;
 
+        /// <summary>
+        /// Create a new game with two players and a chosen game mode
+        /// </summary>
+        /// <param name="whitePlayer">The white player</param>
+        /// <param name="blackPlayer">The black player</param>
+        /// <param name="gameType">The game mode</param>
         public Game(IPlayer whitePlayer, IPlayer blackPlayer, GameTypes gameType) {
             this.whitePlayer = whitePlayer;
             this.blackPlayer = blackPlayer;
             this.gameType = gameType;
         }
 
+        /// <summary>
+        /// Create a new normal game of chess with two players
+        /// </summary>
+        /// <param name="whitePlayer">The white player</param>
+        /// <param name="blackPlayer">The black player</param>
         public Game(IPlayer whitePlayer, IPlayer blackPlayer)
-            : this(whitePlayer, blackPlayer, GameTypes.Normal) {}
+            : this(whitePlayer, blackPlayer, GameTypes.Normal) { }
 
         public Tuple<GameState, GameResults> PlayGame() {
             GameState startState;
@@ -38,6 +75,11 @@ namespace skaktego.Chess {
             return PlayGame(startState);
         }
 
+        /// <summary>
+        /// Play out a game of chess or skaktego
+        /// </summary>
+        /// <param name="startState">The start state of the game</param>
+        /// <returns>The final game state, and the results of the game</returns>
         public Tuple<GameState, GameResults> PlayGame(GameState startState) {
             {
                 GameState whiteObfGameState = GameState.FromString(startState.ToString());
@@ -117,7 +159,7 @@ namespace skaktego.Chess {
                 results = GameResults.Tie;
             }
 
-            return new Tuple<GameState, GameResults> (gameState, results);
+            return new Tuple<GameState, GameResults>(gameState, results);
         }
     }
 

@@ -8,9 +8,29 @@ using skaktego.Graphical;
 
 namespace skaktego.UserInterace {
 
+    /// <summary>
+    /// The three different states a button can be in
+    /// </summary>
     public enum ButtonStates{
-        Mouseable, Moused, Pressed 
+        /// <summary>
+        /// The buttons is able to be moused over (active)
+        /// </summary>
+        Mouseable,
+
+        /// <summary>
+        /// The user is mousing over the button
+        /// </summary>
+        Moused, 
+
+        /// <summary>
+        /// The user has pressed the left mouse button while hovering over it
+        /// </summary>
+        Pressed 
     }
+
+    /// <summary>
+    /// A UI button that can execute an action when pressed
+    /// </summary>
     public class Button {
         public double x, y, w, h;
         public string text;
@@ -19,6 +39,16 @@ namespace skaktego.UserInterace {
         private Action action;
         private Texture textTexture = null;
 
+        /// <summary>
+        /// Construct a new button
+        /// </summary>
+        /// <param name="x">The horizontal offset of the button [0 ; 1]</param>
+        /// <param name="y">The vertical offset of the button [0 ; 1]</param>
+        /// <param name="w">The width of the button [0 ; 1]</param>
+        /// <param name="h">The height of the button [0 ; 1]</param>
+        /// <param name="text">The label of the button</param>
+        /// <param name="font">The font of the label</param>
+        /// <param name="action">The action to execute when pressed and released</param>
         public Button(double x, double y, double w, double h,
         string text, Font font, Action action){
             this.x = x;
@@ -31,6 +61,13 @@ namespace skaktego.UserInterace {
             State = ButtonStates.Mouseable;
         }
 
+        /// <summary>
+        /// Update the button
+        /// </summary>
+        /// <param name="mouseX">The x-position of the mouse</param>
+        /// <param name="mouseY">The y-position of the mouse</param>
+        /// <param name="panelRect">The rectangle the button resides in</param>
+        /// <param name="events">A lsit of user-based events</param>
         public bool Update(int mouseX, int mouseY, Rect panelRect, List<SDL.SDL_Event> events){
 
             bool hasPressed = false;
@@ -60,6 +97,12 @@ namespace skaktego.UserInterace {
             }
             return hasPressed;
         }
+
+        /// <summary>
+        /// Draw the button
+        /// </summary>
+        /// <param name="renderer">The screen renderer</param>
+        /// <param name="dst">The rectangle to draw the button upon</param>
         public void Draw(Renderer renderer, Rect dst) {
             Rect buttonRect = new Rect((int)Math.Round(x * dst.W + dst.X),(int)Math.Round(y * dst.H + dst.Y),
             (int)Math.Round(w * dst.W),(int)Math.Round(h * dst.H));

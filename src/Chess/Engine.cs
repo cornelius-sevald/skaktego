@@ -10,8 +10,12 @@ namespace skaktego.Chess {
     public static class Engine {
 
         /// <summary>
-        /// Finds the legal moves for each piece of the current players turn
+        /// Find the legal moves for every piece of the current players turn
         /// </summary>
+        /// <para>
+        /// As opposed to pseudo-legal moves, this also ensures
+        /// the king does not move into check, and considers castling.
+        /// </para>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
@@ -34,13 +38,17 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Finds the piece on the given position and calls the other getLegalMoves function
+        /// Find all legal moves for the piece at this position
         /// </summary>
+        /// <para>
+        /// As opposed to pseudo-legal moves, this also ensures
+        /// the king does not move into check, and considers castling.
+        /// </para>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// The position of the chess piece selected
         /// </param>
         /// <returns>
         /// All possible, legal moves for the piece on the selected position
@@ -51,8 +59,12 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// For each pseudo legal move, checks if the move would result in setting your own king in check and checks if the player can castle
+        /// Get all legal moves for the piece at that position
         /// </summary>
+        /// <para>
+        /// As opposed to pseudo-legal moves, this also ensures
+        /// the king does not move into check, and considers castling.
+        /// </para>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
@@ -90,7 +102,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks for castling avaliablity
+            // Checks for castling avaliablity
             if (piece != null && piece.Type == PieceTypes.King) {
                 bool whiteRightRookCastle = false;
                 bool whiteLeftRookCastle = false;
@@ -269,13 +281,16 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Finds the piece on the given position and calls the other getSudoLegalMoves function
+        /// Find all pseudo-legal moves of the piece located at the given position
         /// </summary>
+        /// <seealso>
+        /// skaktego.Chess.Engine.GetLegalMoves
+        /// </seealso>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// The position of the chess piece selected
         /// </param>
         /// <returns>
         /// All possible moves for the piece on the selected position
@@ -286,13 +301,16 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Finds the correct PseudoLegalMove function to redirect to 
+        /// Find all pseudo-legal moves for the given piece at the given position
         /// </summary>
+        /// <seealso>
+        /// skaktego.Chess.Engine.GetLegalMoves
+        /// </seealso>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// The position of the chess piece selected
         /// </param>
         /// <param name="piece">
         /// The piece in the selected position
@@ -301,7 +319,7 @@ namespace skaktego.Chess {
         /// All possible moves for the piece on the selected position
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
-            // There are no PseudoLegal moves, if there is no piece
+            // There are no pseudo-legal moves, if there is no piece
             // or it is not the piece's colors turn
             if (piece == null || piece.Color != gameState.player) {
                 return new List<BoardPosition>();
@@ -335,13 +353,14 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Applies the currently selected move and gives the turn to the opponent
+        /// Applies the given move and gives the turn to the opponent
+        /// while advancing the game state
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="move">
-        /// The chosen move from a list of legal moves
+        /// The move to apply
         /// </param>
         /// <param name="strict">
         /// Should the moved be checked if it is legal before being applied?
@@ -549,24 +568,24 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a pawn
+        /// Find all pseudo-legal moves for a pawn at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// The position of the chess piece
         /// </param>
         /// <param name="piece">
-        /// The piece in the selected position
+        /// The piece. This is used to check if the pawn has moved before.
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen pawn
+        /// A list of possible moves for the given pawn
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos, Piece piece) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //checks PseudoLegal moves without capture for the white pawn
+            // Checks pseudo-legal moves without capture for the white pawn
             BoardPosition here = pos;
             if (gameState.player == ChessColors.White) {
                 here.row++;
@@ -581,7 +600,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves without capture for the black pawn
+            // Checks pseudo-legal moves without capture for the black pawn
             if (gameState.player == ChessColors.Black) {
                 here = pos;
                 here.row--;
@@ -596,7 +615,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal captures for the white pawn
+            // Checks pseudo-legal captures for the white pawn
             if (gameState.player == ChessColors.White) {
                 here = pos;
                 here.row++;
@@ -618,7 +637,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal captures for the black pawn
+            // Checks pseudo-legal captures for the black pawn
             if (gameState.player == ChessColors.Black) {
                 here = pos;
                 here.row--;
@@ -645,21 +664,21 @@ namespace skaktego.Chess {
 
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a rook
+        /// Find all pseudo-legal moves for a rook at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// The position of the chess piece
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen rook
+        /// A list of possible moves for the given rook
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalRookMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //checks PseudoLegal moves in the positive vertical direction from the piece's position
+            // Checks pseudo-legal moves in the positive vertical direction from the piece's position
             BoardPosition here = pos;
             while (true) {
                 here.row++;
@@ -675,7 +694,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the negative vertical direction from the piece's position
+            // Checks pseudo-legal moves in the negative vertical direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -691,7 +710,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the positive horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the positive horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.column++;
@@ -707,7 +726,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the negative horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the negative horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.column--;
@@ -726,19 +745,16 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a knight
+        /// Find all pseudo-legal moves for a knight at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
-        /// </param>
-        /// <param name="piece">
-        /// The piece in the selected position
+        /// The position of the chess piece
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen knight
+        /// A list of possible moves for the given knight
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
@@ -762,24 +778,21 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a bishop
+        /// Find all pseudo-legal moves for a bishop at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
-        /// </param>
-        /// <param name="piece">
-        /// The piece in the selected position
+        /// The position of the chess piece
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen bishop
+        /// A list of possible moves for the given bishop
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalBishopMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
-            //checks PseudoLegal moves in the positive vertical and horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the positive vertical and horizontal direction from the piece's position
             BoardPosition here = pos;
             while (true) {
                 here.row++;
@@ -796,7 +809,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the negative vertical and positive horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the negative vertical and positive horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -813,7 +826,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the negative vertical and horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the negative vertical and horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row--;
@@ -830,7 +843,7 @@ namespace skaktego.Chess {
                 }
             }
 
-            //checks PseudoLegal moves in the positive vertical and negative horizontal direction from the piece's position
+            // Checks pseudo-legal moves in the positive vertical and negative horizontal direction from the piece's position
             here = pos;
             while (true) {
                 here.row++;
@@ -850,19 +863,16 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a queen
+        /// Find all pseudo-legal moves for a queen at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
-        /// </param>
-        /// <param name="piece">
-        /// The piece in the selected position
+        /// The position of the chess piece
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen pawn
+        /// A list of possible moves for the given queen
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalQueenMoves(GameState gameState, BoardPosition pos) {
 
@@ -873,19 +883,16 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks the PseudoLegal moves if the piece is a king
+        /// Find all pseudo-legal moves for a king at this position
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
-        /// </param>
-        /// <param name="piece">
-        /// The piece in the selected position
+        /// The position of the chess piece
         /// </param>
         /// <returns>
-        /// A list of possible moves for the chosen king
+        /// A list of possible moves for the given king
         /// </returns>
         public static List<BoardPosition> GetPseudoLegalKingMoves(GameState gameState, BoardPosition pos) {
 
@@ -909,6 +916,16 @@ namespace skaktego.Chess {
             return new List<BoardPosition>(possibleMoves);
         }
 
+        /// <summary>
+        /// Find all moves available in the preperation phase of skaktego
+        /// </summary>
+        /// <para>
+        /// This is the two rows 'closest' to the player excluding <c>pos</c>
+        /// </para>
+        /// <param name="gameState">The state of the game</param>
+        /// <param name="pos">The position to move from</param>
+        /// <param name="piece">The piece at the selected position</param>
+        /// <returns>All available preperation moves</returns>
         private static List<BoardPosition> GetSkaktegoPrepMoves(GameState gameState, BoardPosition pos, Piece piece) {
             List<BoardPosition> possibleMoves = new List<BoardPosition>();
 
@@ -941,6 +958,14 @@ namespace skaktego.Chess {
             return possibleMoves;
         }
 
+        /// <summary>
+        /// Swap the two pieces at moveing to / from
+        /// and update castling info
+        /// </summary>
+        /// <param name="gameState">The state of the game</param>
+        /// <param name="move">The move to apply</param>
+        /// <param name="strict">Should the moved be checked if it is legal before being applied?</param>
+        /// <returns>A new gamestate where the move have been made</returns>
         public static GameState ApplySkaktegoPrepMove(GameState gameState, ChessMove move, bool strict = true) {
             var newGameState = GameState.FromString(gameState.ToString());
             Piece fromPiece = newGameState.board.GetPiece(move.from);
@@ -1011,13 +1036,13 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks if the given tile is attacked by any enemy piece
+        /// Check if the given tile is attacked by any enemy piece
         /// </summary>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <param name="pos">
-        /// The position of the chess piece selected, from 0-7 in both axis
+        /// A position on the board
         /// </param>
         /// <returns>
         /// True if the tile is attacked and false if it is not
@@ -1037,7 +1062,7 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Checks if the players king is in check, by finding the king and seeing if the tile is attacked
+        /// Check if the player's king is in check
         /// </summary>
         /// <param name="realState">
         /// The state of the game
@@ -1072,12 +1097,12 @@ namespace skaktego.Chess {
         /// <summary>
         /// Does not actually check if the game is a tie,
         /// but instead checks if the game is over.
-        /// 
-        /// <para>To check if the game actually is a tie,
-        /// use <c>IsTie AND (NOT IsCheck)</c></para>
-        /// 
-        /// <seealso cref="IsGameOver"/>
         /// </summary>
+        /// <para>
+        /// To check if the game actually is a tie,
+        /// use <c>IsTie AND (NOT IsCheck)</c>
+        /// </para>
+        /// <seealso cref="skaktego.Chess.Engine.IsGameOver"/>
         /// <param name="realState">
         /// The state of the game
         /// </param>
@@ -1111,13 +1136,18 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Check if the game is a checkmate by using both check and tie funtions
+        /// Check if the game is a checkmate
+        /// by checking if the game is a tie and the king is in check
         /// </summary>
+        /// <para>
+        /// This is technically incorrect, as a tie due to
+        /// the fifty-move rule might still result in checkmate
+        /// </para>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
         /// <returns>
-        /// True if the king is in check and the game should otherwise be a tie
+        /// True if the king is in check mate
         /// </returns>
         public static bool IsCheckmate(GameState gameState) {
             return IsCheck(gameState) && IsTie(gameState);
@@ -1125,13 +1155,13 @@ namespace skaktego.Chess {
 
         /// <summary>
         /// Check if the game is over
-        /// 
-        /// <para>This function is equivelant to <c>IsTie</c>.</para>
-        /// 
-        /// <seealso cref="IsTie"/>
         /// </summary>
+        /// <para>
+        /// This function is equivelant to <c>IsTie</c>
+        /// </para>
+        /// <seealso cref="skaktego.Chess.Engine.IsTie"/>
         /// <param name="gameState"></param>
-        /// <returns>True if the game is a tie</returns>
+        /// <returns>True if the game is over</returns>
         public static bool IsGameOver(GameState gameState) {
             if (gameState.gameType == GameTypes.Skaktego) {
                 return gameState.taken.Any(p => p.Type == PieceTypes.King);

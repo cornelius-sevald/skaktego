@@ -22,10 +22,11 @@ namespace skaktego.Chess {
 
         /// <summary>
         /// The search depth of the minimax function.
-        /// 
+        /// </summary>
+        /// <para>
         /// Higher values will make the AI better,
         /// but use more time to compute.
-        /// </summary>
+        /// </para>
         public int SearchDepth { get; private set; }
 
         private GameState gameState = null;
@@ -49,7 +50,10 @@ namespace skaktego.Chess {
             this.rand = rand;
         }
 
-
+        /// <summary>
+        /// Set the game state for the AI
+        /// </summary>
+        /// <param name="gameState"></param>
         public void SetGameState(GameState gameState) {
             this.gameState = gameState;
             if (gameState.gameType == GameTypes.Skaktego) {
@@ -57,6 +61,10 @@ namespace skaktego.Chess {
             }
         }
 
+        /// <summary>
+        /// Get a move from the AI using the minimax algorithm
+        /// </summary>
+        /// <param name="color">The color of the AI</param>
         public ChessMove GetMove(GameState gameState, ChessColors color) {
             this.gameState = gameState;
             if (gameState.gameType == GameTypes.SkaktegoPrep) {
@@ -87,9 +95,10 @@ namespace skaktego.Chess {
 
         /// <summary>
         /// The minimax algorithm with alpha-beta pruning
-        /// 
-        /// <para>This method updates the private <c>bestMove</c> field.</para>
         /// </summary>
+        /// <para>
+        /// This method updates the private <c>bestMove</c> field.
+        /// </para>
         private double MiniMax(GameState gameState, int depth, double alpha, double beta, bool maximizingPlayer) {
             // Return early if reached max depth, or the game is over
             bool gameOver = Engine.IsGameOver(gameState);
@@ -161,12 +170,12 @@ namespace skaktego.Chess {
 
         /// <summary>
         /// Evaluate the value of the game state.
-        /// 
+        /// </summary>
+        /// <para>
         /// White's pieces have a positive value,
         /// while black's have negative value
-        /// </summary>
+        /// </para>
         /// <param name="gameState">The game state to evalueate</param>
-        /// <returns></returns>
         private double EvaluateGameState(GameState gameState, bool gameOver) {
             // Start with neutral value
             double boardValue = 0;

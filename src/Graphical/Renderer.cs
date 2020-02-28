@@ -4,9 +4,23 @@ using SDL2;
 
 namespace skaktego.Graphical {
 
-   public class Renderer {
+    /// <summary>
+    /// Wrapper of an SDL renderer
+    /// 
+    /// <para>The renderer can render textures
+    /// to its associated window</para>
+    /// </summary>
+    public class Renderer {
+
+        /// <summary>
+        /// Pointer to the internal SDL_Renderer
+        /// </summary>
         public IntPtr RenPtr { get; private set; }
 
+        /// <summary>
+        /// Construct a new renderer with an associated window
+        /// </summary>
+        /// <param name="window">The window to render onto</param>
         public Renderer(Window window) {
             // Create renderer
             IntPtr renderer = SDL.SDL_CreateRenderer(window.WinPtr, -1,
@@ -20,21 +34,32 @@ namespace skaktego.Graphical {
             RenPtr = renderer;
         }
 
+        /// <summary>
+        /// Get the size of the screen
+        /// </summary>
         public Rect OutputRect() {
             int w, h;
             SDL.SDL_GetRendererOutputSize(RenPtr, out w, out h);
             return new Rect(0, 0, w, h);
         }
 
-
+        /// <summary>
+        /// Clear the screen with the current color
+        /// </summary>
         public void Clear() {
             SDL.SDL_RenderClear(RenPtr);
         }
 
+        /// <summary>
+        /// Present the backbuffer to the screen
+        /// </summary>
         public void Present() {
             SDL.SDL_RenderPresent(RenPtr);
         }
 
+        /// <summary>
+        /// Set the rendering color
+        /// </summary>
         public void SetColor(Color color) {
             SDL.SDL_SetRenderDrawColor(RenPtr, color.R, color.G, color.B, color.A);
         }
@@ -42,7 +67,6 @@ namespace skaktego.Graphical {
         /// <summary>
         /// Fill a rectangle with the current color.
         /// </summary>
-        /// <param name="rect"></param>
         public void FillRect(Rect rect) {
             SDL.SDL_Rect _rect = rect.Rct;
             SDL.SDL_RenderFillRect(RenPtr, ref _rect);

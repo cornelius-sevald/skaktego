@@ -4,11 +4,29 @@ using System.Text;
 
 namespace skaktego.Chess {
 
+    /// <summary>
+    /// Chess board class
+    /// </summary>
     public class Board {
+
+        /// <summary>
+        /// The width and height of the board.
+        /// 
+        /// <para>This is usually 8</para>
+        /// </summary>
         public int Size { get; private set; }
 
+        // The internal board
         private Piece[,] board;
 
+        /// <summary>
+        /// Create a board from a FEN string
+        /// 
+        /// <para>The notation is a little different from FEN,
+        /// <see>skaktego.Chess.Piece.FromChar</see> for why.</para>
+        /// </summary>
+        /// <param name="s">The board in Forsyth–Edwards Notation</param>
+        /// <returns></returns>
         public static Board FromString(string s) {
             string[] rows = s.Split('/');
             int size = rows.Length;
@@ -44,6 +62,9 @@ namespace skaktego.Chess {
             this.Size = size;
         }
 
+        /// <summary>
+        /// Initialize a board from a 2d array of pieces.
+        /// </summary>
         public Board(Piece[,] pieces) {
             // TODO: Throw error if 
             int size = pieces.GetLength(0);
@@ -52,30 +73,64 @@ namespace skaktego.Chess {
             Array.Copy(pieces, board, pieces.Length);
         }
 
+        /// <summary>
+        /// Get a piece at a position on the board
+        /// </summary>
         public Piece GetPiece(BoardPosition pos) {
             return board[pos.column, pos.row];
         }
 
+        /// <summary>
+        /// Get a piece at a position using a string.
+        /// </summary>
         public Piece GetPiece(string strPos) {
             var pos = BoardPosition.FromString(strPos);
             return GetPiece(pos);
         }
 
+        /// <summary>
+        /// Set a piece at a position on the board
+        /// </summary>
         public void SetPiece(Piece piece, BoardPosition pos) {
             board[pos.column, pos.row] = piece;
         }
 
+        /// <summary>
+        /// Set a piece at a positon on the board using a string
+        /// </summary>
+        /// <param name="piece"></param>
+        /// <param name="strPos"></param>
         public void SetPiece(Piece piece, string strPos) {
             var pos = BoardPosition.FromString(strPos);
             SetPiece(piece, pos);
         }
 
+        /// <summary>
+        /// Capture a piece at a position and return it
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns></returns>
         public Piece CapturePiece(BoardPosition pos) {
             var captured = GetPiece(pos);
             SetPiece(null, pos);
             return captured;
         }
 
+        /// <summary>
+        /// Returns true if a piece occipies the position
+        /// </summary>
+        public bool IsTileOccupied(BoardPosition pos) {
+            return GetPiece(pos) != null;
+
+        }
+
+        /// <summary>
+        /// Convert this board into a FEN string
+        /// </summary>
+        /// <para>
+        /// The notation is a little different from FEN,
+        /// <see>skaktego.Chess.Piece.FromString</see> for why.
+        /// </para>
         public override string ToString() {
             StringBuilder rowStr = new StringBuilder(Size);
 
@@ -108,11 +163,6 @@ namespace skaktego.Chess {
                 rowStr.Clear();
             }
             return string.Join('/', rowStrings);
-        }
-
-        public bool IsTileOccupied(BoardPosition pos) {
-            return GetPiece(pos) != null;
-
         }
 
     }
