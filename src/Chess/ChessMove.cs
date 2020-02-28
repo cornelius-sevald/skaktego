@@ -1,4 +1,4 @@
-namespace skaktego {
+namespace skaktego.Chess {
 
     public struct ChessMove {
         public BoardPosition from;

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using SDL2;
 
-namespace skaktego {
+namespace skaktego.Graphical {
 
     public static class Graphics {
         public const string RESOURCE_PATH = "resources/";

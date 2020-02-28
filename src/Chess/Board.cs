@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     public class Board {
         public int Size { get; private set; }

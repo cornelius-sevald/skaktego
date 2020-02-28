@@ -4,7 +4,10 @@ using System.Threading;
 using System.Collections.Generic;
 using SDL2;
 
-namespace skaktego {
+using skaktego.Graphical;
+using skaktego.Chess;
+
+namespace skaktego.UserInterace {
 
     public sealed class UI : IPlayer {
         // Screen size

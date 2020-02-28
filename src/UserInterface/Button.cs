@@ -3,7 +3,9 @@ using System.Linq;
 using System.Collections.Generic;
 using SDL2;
 
-namespace skaktego {
+using skaktego.Graphical;
+
+namespace skaktego.UserInterace {
 
     public enum ButtonStates{
         Mouseable, Moused, Pressed 

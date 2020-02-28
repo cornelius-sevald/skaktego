@@ -1,6 +1,6 @@
 using System;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     public struct BoardPosition {
 

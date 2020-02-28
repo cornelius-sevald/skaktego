@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     /// <summary>
     /// The three different game types:

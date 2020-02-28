@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     /// <summary>
     /// The enigne class is a collection of functions which handles all the chess logic and rules

@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text;
 
+using skaktego.UserInterace;
+
 namespace skaktego {
     class Program {
 

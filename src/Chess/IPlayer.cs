@@ -1,4 +1,4 @@
-namespace skaktego {
+namespace skaktego.Chess {
 
     public interface IPlayer {
         void GameStart(GameState gameState);

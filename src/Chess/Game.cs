@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     public enum GameResults {
         WhiteWin, BlackWin, Tie, Quit
