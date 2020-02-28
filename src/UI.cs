@@ -146,7 +146,7 @@ namespace skaktego {
             legalMoves.Clear();
 
             storedMove = new MVar<ChessMove>();
-            ChessAI ai = new ChessAI(3);
+            ChessAI ai = new ChessAI(2);
             game = new Game(this, ai, gameType);
             gameThread = new Thread(new ThreadStart(() => {
                 Tuple<GameState, GameResults> results = game.PlayGame();

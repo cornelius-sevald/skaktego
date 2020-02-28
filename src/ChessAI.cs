@@ -70,8 +70,9 @@ namespace skaktego {
 
         private double MiniMax(GameState gameState, int depth, bool maximizingPlayer) {
             // Return early if reached max depth, or the game is over
-            if (depth == 0 || Engine.IsGameOver(gameState)) {
-                return EvaluateBoard(gameState.board);
+            bool gameOver = Engine.IsGameOver(gameState);
+            if (depth == 0 || gameOver) {
+                return EvaluateGameState(gameState, gameOver);
             }
 
 
@@ -119,17 +120,34 @@ namespace skaktego {
         }
 
         /// <summary>
-        /// Evaluate the value of the board.
+        /// Evaluate the value of the game state.
         /// 
         /// White's pieces have a positive value,
         /// while black's have negative value
         /// </summary>
-        /// <param name="board">The game board</param>
+        /// <param name="gameState">The game state to evalueate</param>
         /// <returns></returns>
-        private double EvaluateBoard(Board board) {
+        private double EvaluateGameState(GameState gameState, bool gameOver) {
             // Start with neutral value
             double boardValue = 0;
 
+            bool check = Engine.IsCheck(gameState);
+            // Check if the game is over
+            if (gameOver) {
+                // Check if the current player is in check
+                if (check) {
+                    switch (gameState.player) {
+                        case ChessColors.Black:
+                            return PIECE_VALUES[PieceTypes.King];
+                        default:
+                            return -PIECE_VALUES[PieceTypes.King];
+                    }
+                } else {
+                    return 0;
+                }
+            }
+
+            Board board = gameState.board;
             for (int i = 0; i < board.Size; i++) {
                 for (int j = 0; j < board.Size; j++) {
                     BoardPosition pos = new BoardPosition(i, j);
