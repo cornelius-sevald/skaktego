@@ -68,10 +68,10 @@ namespace skaktego {
                 ChessMove move;
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        move = blackPlayer.GetMove(ChessColors.Black);
+                        move = blackPlayer.GetMove(blackObfGameState, ChessColors.Black);
                         break;
                     default:
-                        move = whitePlayer.GetMove(ChessColors.White);
+                        move = whitePlayer.GetMove(whiteObfGameState, ChessColors.White);
                         break;
                 }
 

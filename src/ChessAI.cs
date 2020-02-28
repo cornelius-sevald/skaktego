@@ -57,7 +57,8 @@ namespace skaktego {
             }
         }
 
-        public ChessMove GetMove(ChessColors color) {
+        public ChessMove GetMove(GameState gameState, ChessColors color) {
+            this.gameState = gameState;
             if (gameState.gameType == GameTypes.SkaktegoPrep) {
                 return GetPrepMove();
             }

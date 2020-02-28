@@ -147,7 +147,8 @@ namespace skaktego {
             this.gameState = gameState;
         }
 
-        public ChessMove GetMove(ChessColors color) {
+        public ChessMove GetMove(GameState gameState, ChessColors color) {
+            this.gameState = gameState;
             this.playerColor = color;
             return storedMove.Var;
         }
@@ -162,13 +163,22 @@ namespace skaktego {
             legalMoves.Clear();
 
             storedMove = new MVar<ChessMove>();
-            ChessAI ai;
-            if (gameType == GameTypes.Normal) {
-                ai = new ChessAI(3);
+
+            IPlayer whitePlayer = this;
+            IPlayer blackPlayer;
+            // Choose the second player.
+            if (aiPlaying) {
+                // Normal chess uses more computational power
+                if (gameType == GameTypes.Normal) {
+                    blackPlayer = new ChessAI(3);
+                } else {
+                    blackPlayer = new ChessAI(4);
+                }
             } else {
-                ai = new ChessAI(4);
+                blackPlayer = this;
             }
-            game = new Game(this, ai, gameType);
+
+            game = new Game(whitePlayer, blackPlayer, gameType);
             gameThread = new Thread(new ThreadStart(() => {
                 Tuple<GameState, GameResults> results = game.PlayGame();
                 gameState = results.Item1;

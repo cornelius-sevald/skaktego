@@ -13,7 +13,7 @@ namespace skaktego {
         /// </summary>
         /// <param name="playerColor">The color of the player</param>
         /// <returns></returns>
-        ChessMove GetMove(ChessColors playerColor);
+        ChessMove GetMove(GameState gameState, ChessColors playerColor);
     }
 
 }

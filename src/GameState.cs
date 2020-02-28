@@ -118,7 +118,8 @@ namespace skaktego {
         }
 
         /// <summary>
-        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces.
+        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces,
+        /// castling information, or en passant.
         /// </summary>
         /// <param name="obfPlayer">The player to hide the opponents pieces from</param>
         public void Obfuscate(ChessColors obfPlayer) {
@@ -130,6 +131,20 @@ namespace skaktego {
                     }
                 }
             }
+
+            if (obfPlayer == ChessColors.White) {
+                castling.blackKing = false;
+                castling.blackQueen = false;
+                castling.blackLeftRook = new BoardPosition(-1, -1);
+                castling.blackRightRook = new BoardPosition(-1, -1);
+            } else {
+                castling.whiteKing = false;
+                castling.whiteQueen = false;
+                castling.whiteLeftRook = new BoardPosition(-1, -1);
+                castling.whiteRightRook = new BoardPosition(-1, -1);
+            }
+
+            enPassant = null;
         }
 
         /// <summary>
