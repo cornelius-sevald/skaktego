@@ -118,7 +118,8 @@ namespace skaktego.Chess {
         }
 
         /// <summary>
-        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces.
+        /// Obfuscate the board so <c>obfPlayer</c> does not see the enemies pieces,
+        /// castling information, or en passant.
         /// </summary>
         /// <param name="obfPlayer">The player to hide the opponents pieces from</param>
         public void Obfuscate(ChessColors obfPlayer) {
@@ -127,6 +128,39 @@ namespace skaktego.Chess {
                     var piece = board.GetPiece(new BoardPosition(i, j));
                     if (piece != null && piece.Color != obfPlayer) {
                         piece.Promote(PieceTypes.Unknown);
+                    }
+                }
+            }
+
+            if (obfPlayer == ChessColors.White) {
+                castling.blackKing = false;
+                castling.blackQueen = false;
+                castling.blackLeftRook = new BoardPosition(-1, -1);
+                castling.blackRightRook = new BoardPosition(-1, -1);
+            } else {
+                castling.whiteKing = false;
+                castling.whiteQueen = false;
+                castling.whiteLeftRook = new BoardPosition(-1, -1);
+                castling.whiteRightRook = new BoardPosition(-1, -1);
+            }
+
+            enPassant = null;
+        }
+
+        /// <summary>
+        /// Replace all unknown pieces with a random piece
+        /// 
+        /// <para>This method never replaces a piece with a king.
+        /// This is due to a bug in <c>ChessAI</c></para>
+        /// </summary>
+        /// <param name="rand">The random number generator</param>
+        public void DeObfuscate(Random rand) {
+            for (int i = 0; i < board.Size; i++) {
+                for (int j = 0; j < board.Size; j++) {
+                    var piece = board.GetPiece(new BoardPosition(i, j));
+                    if (piece != null && piece.Type == PieceTypes.Unknown) {
+                        PieceTypes randType = (PieceTypes) rand.Next(Piece.PIECE_TYPE_COUNT - 2);
+                        piece.Promote(randType);
                     }
                 }
             }

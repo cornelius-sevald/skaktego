@@ -25,10 +25,14 @@ namespace skaktego.UserInterace {
         private Texture background;
         private Texture menuLogo;
         private Texture menuBG;
+        private Texture aiCheckmark;
         private Texture pieceSprites;
         private Texture[] endTextTextures;
         private Texture overlayText1;
         private Texture overlayText2;
+        private Texture skaktegoPrepText1;
+        private Texture skaktegoPrepText2;
+        private Texture menuAIText;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
         private Nullable<BoardPosition> selectedTile = null;
@@ -39,9 +43,13 @@ namespace skaktego.UserInterace {
         private bool isGaming = false;
         private bool doneGaming = false;
         private bool screenHidden = false;
+        private bool aiPlaying = true;
         //Has the user already pressed something this frame
         private bool pressedSomething = false;
+        // The color of the last move's player
         private ChessColors lastPlayer = ChessColors.White;
+        // The color of the current player
+        private ChessColors playerColor = ChessColors.White;
         private Button[] buttons;
         private Button[] menuButtons;
         private Button[] gameButtons;
@@ -88,7 +96,8 @@ namespace skaktego.UserInterace {
                 new Button(3/8.0, 12/24.0, 1/3.0, 1/12.0, " Spil Skak ", font, () => {
                     BeginGaming(GameTypes.Normal);
                 }),
-                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true)
+                new Button(3/8.0, 15/24.0, 1/3.0, 1/12.0, "     Luk     ", font, () => quit = true),
+                new Button(1/4.0, 12/24.0, 1/12.0, 1/12.0, " ", font, () => aiPlaying = !aiPlaying)
             };
 
             gameButtons = new Button[]{
@@ -107,6 +116,7 @@ namespace skaktego.UserInterace {
             background = new Texture(renderer, "background.png");
             menuLogo = new Texture(renderer, "skaktegoLogo.png");
             menuBG = new Texture(renderer, "skaktegoMain.png");
+            aiCheckmark = new Texture(renderer, "checkmark.png");
             pieceSprites = new Texture(renderer, "pieces.png");
             pieceClips = UI.GetPieceClips(pieceSprites);
 
@@ -125,27 +135,55 @@ namespace skaktego.UserInterace {
             using (Surface textSurf = font.TextSurface("Tryk en knap for at fortsætte", Graphics.white)) {
                 overlayText2 = new Texture(renderer, textSurf);
             }
+            using (Surface textSurf = font.TextSurface("Skaktego forberedelsesfase. Tryk på din egne brikker", Graphics.white)) {
+                skaktegoPrepText1 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("for at skifte deres plads, tryk enter når du er færdig.", Graphics.white)) {
+                skaktegoPrepText2 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("AI", Graphics.black)) {
+                menuAIText = new Texture(renderer, textSurf);
+            }
         }
 
-        public void GameStart(GameState gameState) {
-            if (!isGaming) {
-                this.gameState = gameState;
-            }
-            lastPlayer = gameState.player;
+        public void SetGameState(GameState gameState) {
+            this.gameState = gameState;
+        }
+
+        public ChessMove GetMove(GameState gameState, ChessColors color) {
+            this.gameState = gameState;
+            this.playerColor = color;
+            ChessMove move = storedMove.Var;
+            legalMoves.Clear();
+            return move;
+        }
+
+        private void BeginGaming(GameTypes gameType) {
             isGaming = true;
             isMenuActive = false;
             screenHidden = false;
             doneGaming = false;
-        }
+            highlightedTile = null;
+            selectedTile = null;
+            legalMoves.Clear();
 
-        public ChessMove GetMove(GameState gameState) {
-            this.gameState = gameState;
-            return storedMove.Var;
-        }
-
-        private void BeginGaming(GameTypes gameType) {
             storedMove = new MVar<ChessMove>();
-            game = new Game(this, this, gameType);
+
+            IPlayer whitePlayer = this;
+            IPlayer blackPlayer;
+            // Choose the second player.
+            if (aiPlaying) {
+                // Normal chess uses more computational power
+                if (gameType == GameTypes.Normal) {
+                    blackPlayer = new ChessAI(3);
+                } else {
+                    blackPlayer = new ChessAI(4);
+                }
+            } else {
+                blackPlayer = this;
+            }
+
+            game = new Game(whitePlayer, blackPlayer, gameType);
             gameThread = new Thread(new ThreadStart(() => {
                 Tuple<GameState, GameResults> results = game.PlayGame();
                 gameState = results.Item1;
@@ -159,7 +197,7 @@ namespace skaktego.UserInterace {
             isGaming = false;
             highlightedTile = null;
             selectedTile = null;
-            legalMoves = null;
+            legalMoves.Clear();
             if (game != null) {
                 game.quit = true;
             }
@@ -175,7 +213,11 @@ namespace skaktego.UserInterace {
             PollEvents();
 
             // When the player switches, hide the screen
-            if (gameState != null && gameState.player != lastPlayer && gameState.gameType != GameTypes.Normal) {
+            if (gameState != null &&
+                gameState.player != lastPlayer &&
+                gameState.gameType != GameTypes.Normal &&
+                !aiPlaying
+            ) {
                 screenHidden = true;
                 lastPlayer = gameState.player;
             }
@@ -282,11 +324,14 @@ namespace skaktego.UserInterace {
                         highlightedTile = null;
                     }
                     if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
-                    e.button.button == SDL.SDL_BUTTON_LEFT) &&
-                    !pressedSomething) {
+                        e.button.button == SDL.SDL_BUTTON_LEFT)                       &&
+                        !pressedSomething
+                    ) {
                         pressedSomething = true;
                         // If a tile is already selected, attempt to apply the move
-                        if (selectedTile.HasValue && highlightedTile.HasValue) {
+                        if (selectedTile.HasValue    &&
+                            highlightedTile.HasValue
+                        ) {
                             ChessMove move = new ChessMove(selectedTile.Value, highlightedTile.Value);
                             bool isMoveLegal = false;
                             foreach (BoardPosition legalPos in legalMoves) {
@@ -306,10 +351,11 @@ namespace skaktego.UserInterace {
                         }
                         SelectTile(gameState, highlightedTile);
                     } else if (events.Any(e => e.type == SDL.SDL_EventType.SDL_MOUSEBUTTONUP &&
-                    e.button.button == SDL.SDL_BUTTON_RIGHT) &&
-                    !pressedSomething) {
+                               e.button.button == SDL.SDL_BUTTON_RIGHT)                      &&
+                               !pressedSomething
+                    ) {
                         selectedTile = null;
-                        legalMoves = null;
+                        legalMoves.Clear();
                         pressedSomething = true;
                     }
                 }
@@ -349,10 +395,12 @@ namespace skaktego.UserInterace {
 
         private void SelectTile(GameState gameState, Nullable<BoardPosition> tile) {
             selectedTile = highlightedTile;
-            if (selectedTile.HasValue) {
+            if (selectedTile.HasValue &&
+                playerColor == gameState.player
+            ) {
                 legalMoves = Engine.GetLegalMoves(gameState, selectedTile.Value);
             } else {
-                legalMoves = null;
+                legalMoves.Clear();
             }
         }
 
@@ -402,32 +450,14 @@ namespace skaktego.UserInterace {
             }
 
 
-            //Draw game button
-            Rect xButtonRect = new Rect(0, 0, 0, 0);
-            xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
-            xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
-
-            xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
-            xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
-
-            Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
-            xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
-            xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
-
-            xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
-            xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
-
-            renderer.SetColor(new Color(0XffBBBBBBFF));
-            renderer.FillRect(xButtonRectOutline);
-
-            foreach (Button button in gameButtons) {
-                button.Draw(renderer, xButtonRect);
-            }
-            renderer.SetColor(new Color(0Xff002277));
-            renderer.FillRect(xButtonRect);
+            DrawXButton();
 
             if (doneGaming) {
                 DrawEndScreen(screenRect);
+            }
+
+            if (gameState.gameType == GameTypes.SkaktegoPrep) {
+                DrawSkaktegoHelp();
             }
 
             // Draw the in game menu, if it is active
@@ -473,6 +503,22 @@ namespace skaktego.UserInterace {
             // Draw the buttons in the main menu
             foreach (Button button in menuButtons) {
                 button.Draw(renderer, mainMenuRect);
+            }
+
+            Rect aiTextRect = new Rect(
+                (int)Math.Round(1/4.0 * mainMenuRect.W + mainMenuRect.X),
+                (int)Math.Round(10/24.0 * mainMenuRect.H + mainMenuRect.Y),
+                (int)Math.Round(1/12.0 * mainMenuRect.W),
+                (int)Math.Round(1/12.0 * mainMenuRect.H));
+            renderer.RenderTexture(menuAIText, aiTextRect, null);
+
+            if (aiPlaying) {
+                Rect aiRect = new Rect(
+                    (int)Math.Round(1/4.0 * mainMenuRect.W + mainMenuRect.X + 0.5 * (1/12.0 * mainMenuRect.H - 1/14.0 * mainMenuRect.H)),
+                    (int)Math.Round(12/24.0 * mainMenuRect.H + mainMenuRect.Y + 0.5 * (1/12.0 * mainMenuRect.H - 1/14.0 * mainMenuRect.H)),
+                    (int)Math.Round(1/14.0 * mainMenuRect.W),
+                    (int)Math.Round(1/14.0 * mainMenuRect.H));
+                renderer.RenderTexture(aiCheckmark, aiRect, null);
             }
 
             renderer.Present();
@@ -542,6 +588,32 @@ namespace skaktego.UserInterace {
             renderer.RenderTexture(pieceSprites, dst, clip);
         }
 
+        private void DrawXButton() {
+            //Draw game button
+            Rect xButtonRect = new Rect(0, 0, 0, 0);
+            xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+            xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+            xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+            xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+
+            Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
+            xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
+            xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
+
+            xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+            xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+
+            renderer.SetColor(new Color(0XffBBBBBBFF));
+            renderer.FillRect(xButtonRectOutline);
+
+            foreach (Button button in gameButtons) {
+                button.Draw(renderer, xButtonRect);
+            }
+            renderer.SetColor(new Color(0Xff002277));
+            renderer.FillRect(xButtonRect);
+        }
+
         private void DrawGraveyard(Rect screen, Rect board) {
             int x = 0, y = 0;
             int i = 0, j = 0;
@@ -550,6 +622,11 @@ namespace skaktego.UserInterace {
             int graveSpace = board.X / w == 0? screen.W / w : board.X / w;
             Rect square = new Rect(x,y,w,h);
             Rect halfScreen = new Rect(0,0,screen.W/2,screen.H);
+            if (screenRect.H > screenRect.W) {
+                halfScreen.Y = screen.H/2;
+                halfScreen.W = screen.W;
+                halfScreen.H = screen.H/2;
+            }
             renderer.SetColor(new Color(0X222222FF));
             renderer.FillRect(halfScreen);
 
@@ -623,6 +700,32 @@ namespace skaktego.UserInterace {
 
             renderer.RenderTexture(overlayText1, overlayTextRect1, null);
             renderer.RenderTexture(overlayText2, overlayTextRect2, null);
+        }
+
+        private void DrawSkaktegoHelp() {
+            Rect prepText1 = new Rect(0,0,0,0);
+            Rect prepText2 = new Rect(0,0,0,0);
+            Rect prepOverlay = new Rect(0,0,0,0);
+
+            prepOverlay.X = (int)(screenRect.W * 0.175);
+            prepOverlay.Y = (int)(screenRect.H * 0.35);
+            prepOverlay.W = (int)(screenRect.W * 0.7);
+            prepOverlay.H = (int)(screenRect.H * 0.3);
+
+            prepText1.X = (int)(screenRect.W * 0.2);
+            prepText1.Y = (int)(screenRect.H * 0.4);
+            prepText1.W = (int)(screenRect.W * 0.65);
+            prepText1.H = (int)(screenRect.H * 0.1);
+
+            prepText2.X = (int)(screenRect.W * 0.2);
+            prepText2.Y = (int)(screenRect.H * 0.5);
+            prepText2.W = (int)(screenRect.W * 0.65);
+            prepText2.H = (int)(screenRect.H * 0.1);
+
+            renderer.SetColor(new Color(0X00000099));
+            renderer.FillRect(prepOverlay);
+            renderer.RenderTexture(skaktegoPrepText1, prepText1, null);
+            renderer.RenderTexture(skaktegoPrepText2, prepText2, null);
         }
 
         private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos) {

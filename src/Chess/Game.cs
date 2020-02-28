@@ -44,8 +44,6 @@ namespace skaktego.Chess {
                 GameState blackObfGameState = GameState.FromString(startState.ToString());
                 whiteObfGameState.Obfuscate(ChessColors.White);
                 blackObfGameState.Obfuscate(ChessColors.Black);
-                whitePlayer.GameStart(whiteObfGameState);
-                blackPlayer.GameStart(blackObfGameState);
             }
 
             bool checkMate = Engine.IsCheckmate(startState);
@@ -55,27 +53,25 @@ namespace skaktego.Chess {
             GameState gameState = GameState.FromString(startState.ToString());
             while (!checkMate && !kingTaken && !tie && !quit) {
                 // Obfuscated version of the board, if playing skaktego.
-                // Otherwise just a board.
-                GameState obfGameState;
+                // Otherwise just the normal game state.
+                GameState whiteObfGameState = GameState.FromString(gameState.ToString());
+                GameState blackObfGameState = GameState.FromString(gameState.ToString());;
+
+                if (gameType == GameTypes.Skaktego || gameType == GameTypes.SkaktegoPrep) {
+                    whiteObfGameState.Obfuscate(ChessColors.White);
+                    blackObfGameState.Obfuscate(ChessColors.Black);
+                }
+
+                whitePlayer.SetGameState(whiteObfGameState);
+                blackPlayer.SetGameState(blackObfGameState);
+
                 ChessMove move;
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        if (gameType == GameTypes.Normal) {
-                            obfGameState = gameState;
-                        } else {
-                            obfGameState = GameState.FromString(gameState.ToString());
-                            obfGameState.Obfuscate(gameState.player);
-                        }
-                        move = blackPlayer.GetMove(obfGameState);
+                        move = blackPlayer.GetMove(blackObfGameState, ChessColors.Black);
                         break;
                     default:
-                        if (gameType == GameTypes.Normal) {
-                            obfGameState = gameState;
-                        } else {
-                            obfGameState = GameState.FromString(gameState.ToString());
-                            obfGameState.Obfuscate(gameState.player);
-                        }
-                        move = whitePlayer.GetMove(obfGameState);
+                        move = whitePlayer.GetMove(whiteObfGameState, ChessColors.White);
                         break;
                 }
 
@@ -98,32 +94,26 @@ namespace skaktego.Chess {
             GameResults results = GameResults.Quit;
 
             if (quit) {
-                Console.WriteLine("En gamer har stoppet spillet 😳");
                 results = GameResults.Quit;
             } else if (checkMate) {
                 switch (gameState.player) {
                     case ChessColors.Black:
-                        Console.WriteLine("Hvid vinder");
                         results = GameResults.WhiteWin;
                         break;
                     default:
-                        Console.WriteLine("Sort vinder");
                         results = GameResults.BlackWin;
                         break;
                 }
             } else if (kingTaken) {
                 switch (gameState.taken.Find(p => p.Type == PieceTypes.King).Color) {
                     case ChessColors.Black:
-                        Console.WriteLine("Hvid vinder");
                         results = GameResults.WhiteWin;
                         break;
                     default:
-                        Console.WriteLine("Sort vinder");
                         results = GameResults.BlackWin;
                         break;
                 }
             } else if (tie) {
-                Console.WriteLine("Det står lige, gamere..");
                 results = GameResults.Tie;
             }
 
