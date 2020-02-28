@@ -563,6 +563,11 @@ namespace skaktego {
             int graveSpace = board.X / w == 0? screen.W / w : board.X / w;
             Rect square = new Rect(x,y,w,h);
             Rect halfScreen = new Rect(0,0,screen.W/2,screen.H);
+            if (screenRect.H > screenRect.W) {
+                halfScreen.Y = screen.H/2;
+                halfScreen.W = screen.W;
+                halfScreen.H = screen.H/2;
+            }
             renderer.SetColor(new Color(0X222222FF));
             renderer.FillRect(halfScreen);
 
