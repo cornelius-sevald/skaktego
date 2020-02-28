@@ -129,7 +129,7 @@ namespace skaktego {
             using (Surface textSurf = font.TextSurface("Tryk en knap for at fortsætte", Graphics.white)) {
                 overlayText2 = new Texture(renderer, textSurf);
             }
-            using (Surface textSurf = font.TextSurface("Skaktego forberedelsfase. Tryk på din egne brikker", Graphics.white)) {
+            using (Surface textSurf = font.TextSurface("Skaktego forberedelsesfase. Tryk på din egne brikker", Graphics.white)) {
                 skaktegoPrepText1 = new Texture(renderer, textSurf);
             }
             using (Surface textSurf = font.TextSurface("for at skifte deres plads, tryk enter når du er færdig.", Graphics.white)) {
@@ -672,19 +672,19 @@ namespace skaktego {
             Rect prepText2 = new Rect(0,0,0,0);
             Rect prepOverlay = new Rect(0,0,0,0);
 
-            prepOverlay.X = (int)(screenRect.W * 0.15);
+            prepOverlay.X = (int)(screenRect.W * 0.175);
             prepOverlay.Y = (int)(screenRect.H * 0.35);
             prepOverlay.W = (int)(screenRect.W * 0.7);
             prepOverlay.H = (int)(screenRect.H * 0.3);
 
             prepText1.X = (int)(screenRect.W * 0.2);
             prepText1.Y = (int)(screenRect.H * 0.4);
-            prepText1.W = (int)(screenRect.W * 0.6);
+            prepText1.W = (int)(screenRect.W * 0.65);
             prepText1.H = (int)(screenRect.H * 0.1);
 
             prepText2.X = (int)(screenRect.W * 0.2);
             prepText2.Y = (int)(screenRect.H * 0.5);
-            prepText2.W = (int)(screenRect.W * 0.6);
+            prepText2.W = (int)(screenRect.W * 0.65);
             prepText2.H = (int)(screenRect.H * 0.1);
 
             renderer.SetColor(new Color(0X00000099));
