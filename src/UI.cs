@@ -407,29 +407,7 @@ namespace skaktego {
             }
 
 
-            //Draw game button
-            Rect xButtonRect = new Rect(0, 0, 0, 0);
-            xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
-            xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
-
-            xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
-            xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
-
-            Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
-            xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
-            xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
-
-            xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
-            xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
-
-            renderer.SetColor(new Color(0XffBBBBBBFF));
-            renderer.FillRect(xButtonRectOutline);
-
-            foreach (Button button in gameButtons) {
-                button.Draw(renderer, xButtonRect);
-            }
-            renderer.SetColor(new Color(0Xff002277));
-            renderer.FillRect(xButtonRect);
+            DrawXButton();
 
             if (doneGaming) {
                 DrawEndScreen(screenRect);
@@ -549,6 +527,32 @@ namespace skaktego {
         private void DrawPiece(Piece piece, Rect dst) {
             Rect clip = pieceClips[(int)piece.Type, (int)piece.Color];
             renderer.RenderTexture(pieceSprites, dst, clip);
+        }
+
+        private void DrawXButton() {
+            //Draw game button
+            Rect xButtonRect = new Rect(0, 0, 0, 0);
+            xButtonRect.W = (Math.Min(screenRect.H, screenRect.W) / 16);
+            xButtonRect.H = (Math.Min(screenRect.H, screenRect.W) / 16);
+
+            xButtonRect.X = screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12);
+            xButtonRect.Y = (Math.Min(screenRect.H, screenRect.W) / 50);
+
+            Rect xButtonRectOutline = new Rect(0, 0, 0, 0);
+            xButtonRectOutline.W = (Math.Min(screenRect.H, screenRect.W) / 15);
+            xButtonRectOutline.H = (Math.Min(screenRect.H, screenRect.W) / 15);
+
+            xButtonRectOutline.X = (screenRect.W - (Math.Min(screenRect.H, screenRect.W) / 12)) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+            xButtonRectOutline.Y = (Math.Min(screenRect.H, screenRect.W) / 50) - ((xButtonRectOutline.W - xButtonRect.W) / 2);
+
+            renderer.SetColor(new Color(0XffBBBBBBFF));
+            renderer.FillRect(xButtonRectOutline);
+
+            foreach (Button button in gameButtons) {
+                button.Draw(renderer, xButtonRect);
+            }
+            renderer.SetColor(new Color(0Xff002277));
+            renderer.FillRect(xButtonRect);
         }
 
         private void DrawGraveyard(Rect screen, Rect board) {
