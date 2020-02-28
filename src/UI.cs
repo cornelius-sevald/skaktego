@@ -26,6 +26,8 @@ namespace skaktego {
         private Texture[] endTextTextures;
         private Texture overlayText1;
         private Texture overlayText2;
+        private Texture skaktegoPrepText1;
+        private Texture skaktegoPrepText2;
         private Rect[,] pieceClips;
         private Nullable<BoardPosition> highlightedTile = null;
         private Nullable<BoardPosition> selectedTile = null;
@@ -121,6 +123,12 @@ namespace skaktego {
             }
             using (Surface textSurf = font.TextSurface("Tryk en knap for at fortsætte", Graphics.white)) {
                 overlayText2 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("Skaktego forberedelsfase. Tryk på din egne brikker", Graphics.white)) {
+                skaktegoPrepText1 = new Texture(renderer, textSurf);
+            }
+            using (Surface textSurf = font.TextSurface("for at skifte deres plads, tryk enter når du er færdig.", Graphics.white)) {
+                skaktegoPrepText2 = new Texture(renderer, textSurf);
             }
         }
 
@@ -427,6 +435,10 @@ namespace skaktego {
                 DrawEndScreen(screenRect);
             }
 
+            if (gameState.gameType == GameTypes.SkaktegoPrep) {
+                DrawSkaktegoHelp();
+            }
+
             // Draw the in game menu, if it is active
             if (isMenuActive) {
                 DrawGameMenu(boardRect);
@@ -620,6 +632,32 @@ namespace skaktego {
 
             renderer.RenderTexture(overlayText1, overlayTextRect1, null);
             renderer.RenderTexture(overlayText2, overlayTextRect2, null);
+        }
+
+        private void DrawSkaktegoHelp() {
+            Rect prepText1 = new Rect(0,0,0,0);
+            Rect prepText2 = new Rect(0,0,0,0);
+            Rect prepOverlay = new Rect(0,0,0,0);
+
+            prepOverlay.X = (int)(screenRect.W * 0.15);
+            prepOverlay.Y = (int)(screenRect.H * 0.35);
+            prepOverlay.W = (int)(screenRect.W * 0.7);
+            prepOverlay.H = (int)(screenRect.H * 0.3);
+
+            prepText1.X = (int)(screenRect.W * 0.2);
+            prepText1.Y = (int)(screenRect.H * 0.4);
+            prepText1.W = (int)(screenRect.W * 0.6);
+            prepText1.H = (int)(screenRect.H * 0.1);
+
+            prepText2.X = (int)(screenRect.W * 0.2);
+            prepText2.Y = (int)(screenRect.H * 0.5);
+            prepText2.W = (int)(screenRect.W * 0.6);
+            prepText2.H = (int)(screenRect.H * 0.1);
+
+            renderer.SetColor(new Color(0X00000099));
+            renderer.FillRect(prepOverlay);
+            renderer.RenderTexture(skaktegoPrepText1, prepText1, null);
+            renderer.RenderTexture(skaktegoPrepText2, prepText2, null);
         }
 
         private void HighlightTile(Color color, Board board, Rect boardRect, BoardPosition pos) {
