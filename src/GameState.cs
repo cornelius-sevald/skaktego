@@ -132,6 +132,22 @@ namespace skaktego {
             }
         }
 
+        /// <summary>
+        /// Replace all unknown pieces with a random piece
+        /// </summary>
+        /// <param name="rand">The random number generator</param>
+        public void DeObfuscate(Random rand) {
+            for (int i = 0; i < board.Size; i++) {
+                for (int j = 0; j < board.Size; j++) {
+                    var piece = board.GetPiece(new BoardPosition(i, j));
+                    if (piece != null && piece.Type == PieceTypes.Unknown) {
+                        PieceTypes randType = (PieceTypes) rand.Next(Piece.PIECE_TYPE_COUNT - 1);
+                        piece.Promote(randType);
+                    }
+                }
+            }
+        }
+
         public static GameState FromString(string stateStr) {
             string[] splitStr = stateStr.Split(' ');
             var boardStr     = splitStr[0];

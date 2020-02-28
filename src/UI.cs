@@ -36,6 +36,7 @@ namespace skaktego {
         private bool isGaming = false;
         private bool doneGaming = false;
         private bool screenHidden = false;
+        private bool aiPlaying = true;
         //Has the user already pressed something this frame
         private bool pressedSomething = false;
         // The color of the last move's player
@@ -177,7 +178,11 @@ namespace skaktego {
             PollEvents();
 
             // When the player switches, hide the screen
-            if (gameState != null && gameState.player != lastPlayer && gameState.gameType != GameTypes.Normal) {
+            if (gameState != null &&
+                gameState.player != lastPlayer &&
+                gameState.gameType != GameTypes.Normal &&
+                !aiPlaying
+            ) {
                 screenHidden = true;
                 lastPlayer = gameState.player;
             }

@@ -37,7 +37,7 @@ namespace skaktego {
         /// </summary>
         /// <param name="searchDepth">The depth of the algorithm search</param>
         public ChessAI(int searchDepth)
-            : this(searchDepth, new Random()) {}
+            : this(searchDepth, new Random()) { }
 
         /// <summary>
         /// Construct a new <c>ChessAI</c> with a given search depth and RNG generator
@@ -52,9 +52,16 @@ namespace skaktego {
 
         public void SetGameState(GameState gameState) {
             this.gameState = gameState;
+            if (gameState.gameType == GameTypes.Skaktego) {
+                gameState.DeObfuscate(rand);
+            }
         }
 
         public ChessMove GetMove(ChessColors color) {
+            if (gameState.gameType == GameTypes.SkaktegoPrep) {
+                return GetPrepMove();
+            }
+
             bool maximizingPlayer = color == ChessColors.White;
             MiniMax(gameState, SearchDepth, double.NegativeInfinity, double.PositiveInfinity, maximizingPlayer);
 
@@ -63,6 +70,18 @@ namespace skaktego {
             }
 
             return bestMove.Value;
+        }
+
+        /// <summary>
+        /// Get a random move in the skaktego preperation phase
+        /// </summary>
+        private ChessMove GetPrepMove() {
+            if (rand.Next(0, 100) == 0) {
+                return Game.DONE_PREPARING_MOVE;
+            }
+            List<ChessMove> legalMoves = Engine.GetAllLegalMoves(gameState);
+            int i = rand.Next(legalMoves.Count);
+            return legalMoves[i];
         }
 
         /// <summary>
@@ -151,19 +170,31 @@ namespace skaktego {
             // Start with neutral value
             double boardValue = 0;
 
-            bool check = Engine.IsCheck(gameState);
-            // Check if the game is over
-            if (gameOver) {
-                // Check if the current player is in check
-                if (check) {
-                    switch (gameState.player) {
-                        case ChessColors.Black:
-                            return PIECE_VALUES[PieceTypes.King];
-                        default:
-                            return -PIECE_VALUES[PieceTypes.King];
+            // If playing skaktego, check if a king was taken
+            if (gameOver && gameState.gameType == GameTypes.Skaktego) {
+                Piece takenKing = gameState.taken.Find(p => p.Type == PieceTypes.King);
+                switch (takenKing.Color) {
+                    case ChessColors.Black:
+                        return PIECE_VALUES[PieceTypes.King];
+                    default:
+                        return -PIECE_VALUES[PieceTypes.King];
+                }
+            // Otherwise, check if for checkmate / tie
+            } else {
+                bool check = Engine.IsCheck(gameState);
+                // Check if the game is over
+                if (gameOver) {
+                    // Check if the current player is in check
+                    if (check) {
+                        switch (gameState.player) {
+                            case ChessColors.Black:
+                                return PIECE_VALUES[PieceTypes.King];
+                            default:
+                                return -PIECE_VALUES[PieceTypes.King];
+                        }
+                    } else {
+                        return 0;
                     }
-                } else {
-                    return 0;
                 }
             }
 

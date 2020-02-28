@@ -7,7 +7,7 @@ namespace skaktego {
     /// <summary>
     /// The enigne class is a collection of functions which handles all the chess logic and rules
     /// </summary>
-    public static class Engine{
+    public static class Engine {
 
         /// <summary>
         /// Finds the legal moves for each piece of the current players turn
@@ -75,12 +75,18 @@ namespace skaktego {
             GameState gameState = GameState.FromString(realState.ToString());
             List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
             List<BoardPosition> legalMoves = new List<BoardPosition>();
-            foreach (BoardPosition movePos in moves) {
-                ChessMove move = new ChessMove(pos, movePos);
-                GameState tempState = ApplyMove(gameState, move, false);
-                tempState.player = tempState.player.Other();
-                if (!IsCheck(tempState)) {
-                    legalMoves.Add(movePos);
+
+            // When playing skaktego, it is not illegal to put yourself in check
+            if (gameState.gameType == GameTypes.Skaktego) {
+                legalMoves = moves;
+            } else {
+                foreach (BoardPosition movePos in moves) {
+                    ChessMove move = new ChessMove(pos, movePos);
+                    GameState tempState = ApplyMove(gameState, move, false);
+                    tempState.player = tempState.player.Other();
+                    if (!IsCheck(tempState)) {
+                        legalMoves.Add(movePos);
+                    }
                 }
             }
 
@@ -245,7 +251,7 @@ namespace skaktego {
 
                 case PieceTypes.King:
                     return GetPseudoLegalKingMoves(gameState, pos);
-                
+
                 case PieceTypes.Unknown:
                     return new List<BoardPosition>();
 
@@ -270,13 +276,12 @@ namespace skaktego {
         /// <returns>
         /// A new gamestate where the move have been made
         /// </returns>
-        public static GameState ApplyMove(GameState gameState, ChessMove move, bool strict=true) {
+        public static GameState ApplyMove(GameState gameState, ChessMove move, bool strict = true) {
             // If the move is out of bounds, ignore it
-            if (move.from.column < 0                     || move.from.row < 0                     ||
+            if (move.from.column < 0 || move.from.row < 0 ||
                 move.from.column >= gameState.board.Size || move.from.row >= gameState.board.Size ||
-                move.to.column   < 0                     || move.to.row   < 0                     ||
-                move.to.column   >= gameState.board.Size || move.to.row   >= gameState.board.Size)
-            {
+                move.to.column < 0 || move.to.row < 0 ||
+                move.to.column >= gameState.board.Size || move.to.row >= gameState.board.Size) {
                 return gameState;
             }
 
@@ -306,7 +311,7 @@ namespace skaktego {
                 }
             }
             Piece captured = null;
-            
+
             // Do the actual move if the piece is not a king - more advanced king movement under castling
             if (piece.Type != PieceTypes.King) {
                 newGameState.board.SetPiece(null, move.from);
@@ -412,7 +417,7 @@ namespace skaktego {
 
             //remove option of castling if the king is moved
             if (piece.Type == PieceTypes.King) {
-                switch(newGameState.player) {
+                switch (newGameState.player) {
                     case ChessColors.Black:
                         newGameState.castling.blackKing = false;
                         newGameState.castling.blackQueen = false;
@@ -422,7 +427,7 @@ namespace skaktego {
                         newGameState.castling.whiteKing = false;
                         newGameState.castling.whiteQueen = false;
                         break;
-                    
+
                 }
             }
 
@@ -491,7 +496,7 @@ namespace skaktego {
                 here.row++;
                 if (here.row < gameState.board.Size && !gameState.board.IsTileOccupied(here)) {
                     possibleMoves.Push(here);
-                    if(!piece.hasMoved) {
+                    if (!piece.hasMoved) {
                         here.row++;
                         if (here.row < gameState.board.Size && !gameState.board.IsTileOccupied(here)) {
                             possibleMoves.Push(here);
@@ -506,7 +511,7 @@ namespace skaktego {
                 here.row--;
                 if (here.row >= 0 && !gameState.board.IsTileOccupied(here)) {
                     possibleMoves.Push(here);
-                    if(!piece.hasMoved) {
+                    if (!piece.hasMoved) {
                         here.row--;
                         if (here.row >= 0 && !gameState.board.IsTileOccupied(here)) {
                             possibleMoves.Push(here);
@@ -520,7 +525,7 @@ namespace skaktego {
                 here = pos;
                 here.row++;
                 here.column++;
-                if(here.row < gameState.board.Size && here.column < gameState.board.Size) {
+                if (here.row < gameState.board.Size && here.column < gameState.board.Size) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
@@ -528,7 +533,7 @@ namespace skaktego {
                     }
                 }
                 here.column -= 2;
-                if(here.row < gameState.board.Size && here.column >= 0) {
+                if (here.row < gameState.board.Size && here.column >= 0) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
@@ -542,7 +547,7 @@ namespace skaktego {
                 here = pos;
                 here.row--;
                 here.column++;
-                if(here.row >= 0 && here.column < gameState.board.Size) {
+                if (here.row >= 0 && here.column < gameState.board.Size) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
@@ -550,7 +555,7 @@ namespace skaktego {
                     }
                 }
                 here.column -= 2;
-                if(here.row >= 0 && here.column >= 0) {
+                if (here.row >= 0 && here.column >= 0) {
                     if (gameState.board.IsTileOccupied(here) && gameState.board.GetPiece(here).Color != gameState.player) {
                         possibleMoves.Push(here);
                     } else if (gameState.enPassant.HasValue && gameState.enPassant.Value == here) {
@@ -587,7 +592,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -603,7 +608,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -619,7 +624,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -635,14 +640,14 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
                 }
             }
             return new List<BoardPosition>(possibleMoves);
-         }
+        }
 
         /// <summary>
         /// Checks the PseudoLegal moves if the piece is a knight
@@ -659,15 +664,15 @@ namespace skaktego {
         /// <returns>
         /// A list of possible moves for the chosen knight
         /// </returns>
-         public static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
+        public static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //The knight can have a maximum of 8 possible moves, and the only factor is if the move is outside the board or is occupied by the players own piece
             BoardPosition here = pos;
             for (int i = 1; i < 9; i++) {
                 here = pos;
-                here.row += (int)Math.Round(2*Math.Sin(i*0.8 + 1));
-                here.column += (int)Math.Round(2*Math.Sin(i*0.8 - 0.5));;
+                here.row += (int)Math.Round(2 * Math.Sin(i * 0.8 + 1));
+                here.column += (int)Math.Round(2 * Math.Sin(i * 0.8 - 0.5)); ;
                 possibleMoves.Push(here);
                 if (here.row >= gameState.board.Size || here.row < 0 || here.column >= gameState.board.Size || here.column < 0) {
                     possibleMoves.Pop();
@@ -708,7 +713,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -725,7 +730,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -742,7 +747,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -759,7 +764,7 @@ namespace skaktego {
                 }
                 possibleMoves.Push(here);
                 if (gameState.board.IsTileOccupied(here)) {
-                    if(gameState.board.GetPiece(here).Color == gameState.player) {
+                    if (gameState.board.GetPiece(here).Color == gameState.player) {
                         possibleMoves.Pop();
                     }
                     break;
@@ -814,8 +819,8 @@ namespace skaktego {
             BoardPosition here = pos;
             for (int i = 1; i < 9; i++) {
                 here = pos;
-                here.row += (int)Math.Round(Math.Sin(i*0.8 + 0.6));
-                here.column += (int)Math.Round(Math.Sin(i*0.8 - 0.7));;
+                here.row += (int)Math.Round(Math.Sin(i * 0.8 + 0.6));
+                here.column += (int)Math.Round(Math.Sin(i * 0.8 - 0.7)); ;
                 possibleMoves.Push(here);
                 if (here.row >= gameState.board.Size || here.row < 0 || here.column >= gameState.board.Size || here.column < 0) {
                     possibleMoves.Pop();
@@ -860,7 +865,7 @@ namespace skaktego {
             return possibleMoves;
         }
 
-        public static GameState ApplySkaktegoPrepMove(GameState gameState, ChessMove move, bool strict=true) {
+        public static GameState ApplySkaktegoPrepMove(GameState gameState, ChessMove move, bool strict = true) {
             var newGameState = GameState.FromString(gameState.ToString());
             Piece fromPiece = newGameState.board.GetPiece(move.from);
 
@@ -886,11 +891,11 @@ namespace skaktego {
             BoardPosition rightRook;
             switch (newGameState.player) {
                 case ChessColors.Black:
-                    leftRook  = newGameState.castling.blackLeftRook;
+                    leftRook = newGameState.castling.blackLeftRook;
                     rightRook = newGameState.castling.blackRightRook;
                     break;
                 default:
-                    leftRook  = newGameState.castling.whiteLeftRook;
+                    leftRook = newGameState.castling.whiteLeftRook;
                     rightRook = newGameState.castling.whiteRightRook;
                     break;
             }
@@ -920,11 +925,11 @@ namespace skaktego {
             }
             switch (newGameState.player) {
                 case ChessColors.Black:
-                    newGameState.castling.blackLeftRook  = leftRook;
+                    newGameState.castling.blackLeftRook = leftRook;
                     newGameState.castling.blackRightRook = rightRook;
                     break;
                 default:
-                    newGameState.castling.whiteLeftRook  = leftRook;
+                    newGameState.castling.whiteLeftRook = leftRook;
                     newGameState.castling.whiteRightRook = rightRook;
                     break;
             }
@@ -981,7 +986,7 @@ namespace skaktego {
                         break;
                     }
                 }
-                if(kingFound) {
+                if (kingFound) {
                     break;
                 }
             }
@@ -1007,7 +1012,7 @@ namespace skaktego {
             GameState gameState = GameState.FromString(realState.ToString());
 
             //50 moves without capture or moving a pawn
-            if(gameState.halfmoveClock >= 50) {
+            if (gameState.halfmoveClock >= 50) {
                 return true;
             }
 
@@ -1055,6 +1060,9 @@ namespace skaktego {
         /// <param name="gameState"></param>
         /// <returns>True if the game is a tie</returns>
         public static bool IsGameOver(GameState gameState) {
+            if (gameState.gameType == GameTypes.Skaktego) {
+                return gameState.taken.Any(p => p.Type == PieceTypes.King);
+            }
             return IsTie(gameState);
         }
     }
