@@ -976,17 +976,14 @@ namespace skaktego {
                     break;
             }
             if (fromPiece.Type == PieceTypes.Rook && toPiece.Type == PieceTypes.Rook) {
-                Console.WriteLine("Rooks switched places");
                 // No need to do anything, the rooks have switched places
             } else if (fromPiece.Type == PieceTypes.Rook) {
-                Console.WriteLine("Rook moved");
                 if (move.from == leftRook) {
                     leftRook = move.to;
                 } else {
                     rightRook = move.to;
                 }
             } else if (toPiece.Type == PieceTypes.Rook) {
-                Console.WriteLine("Rook replaced");
                 if (move.to == leftRook) {
                     leftRook = move.from;
                 } else {
