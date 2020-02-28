@@ -65,8 +65,7 @@ namespace skaktego.Chess {
         /// Get a move from the AI using the minimax algorithm
         /// </summary>
         /// <param name="color">The color of the AI</param>
-        public ChessMove GetMove(GameState gameState, ChessColors color) {
-            this.gameState = gameState;
+        public ChessMove GetMove(GameState _, ChessColors color) {
             if (gameState.gameType == GameTypes.SkaktegoPrep) {
                 return GetPrepMove();
             }

@@ -97,7 +97,7 @@ namespace skaktego.Chess {
                 // Obfuscated version of the board, if playing skaktego.
                 // Otherwise just the normal game state.
                 GameState whiteObfGameState = GameState.FromString(gameState.ToString());
-                GameState blackObfGameState = GameState.FromString(gameState.ToString());;
+                GameState blackObfGameState = GameState.FromString(gameState.ToString());
 
                 if (gameType == GameTypes.Skaktego || gameType == GameTypes.SkaktegoPrep) {
                     whiteObfGameState.Obfuscate(ChessColors.White);

@@ -582,7 +582,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given pawn
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos, Piece piece) {
+        private static List<BoardPosition> GetPseudoLegalPawnMoves(GameState gameState, BoardPosition pos, Piece piece) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             // Checks pseudo-legal moves without capture for the white pawn
@@ -976,7 +976,7 @@ namespace skaktego.Chess {
                     return gameState;
                 }
 
-                List<BoardPosition> legalMoves = GetLegalMoves(newGameState, move.from, fromPiece);
+                List<BoardPosition> legalMoves = GetSkaktegoPrepMoves(newGameState, move.from, fromPiece);
                 // If the move is not legal, do not apply it
                 if (!legalMoves.Contains(move.to)) {
                     return gameState;

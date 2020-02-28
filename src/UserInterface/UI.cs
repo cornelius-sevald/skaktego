@@ -48,7 +48,7 @@ namespace skaktego.UserInterace {
         private Nullable<BoardPosition> selectedTile = null;
         private List<BoardPosition> legalMoves;
         private List<SDL.SDL_Event> events;
-        private Rect screenRect = null;
+        private Rect screenRect;
 
         // True when the game menu (not main menu!) is active
         private bool isMenuActive = false;
@@ -452,7 +452,7 @@ namespace skaktego.UserInterace {
             }
         }
 
-        public void DrawGame(GameState gameState) {
+        private void DrawGame(GameState gameState) {
             if (screenHidden) {
                 DrawOverlay();
                 renderer.Present();

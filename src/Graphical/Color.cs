@@ -7,7 +7,7 @@ namespace skaktego.Graphical {
     /// <summary>
     /// Simple RGBA color representation
     /// </summary>
-    public class Color {
+    public struct Color {
         public byte R { get; set; }
         public byte G { get; set; }
         public byte B { get; set; }
