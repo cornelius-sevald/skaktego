@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace skaktego {
+namespace skaktego.Chess {
 
     /// <summary>
     /// Class that can play chess and skaktego using the miniax algorithm
