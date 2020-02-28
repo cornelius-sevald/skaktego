@@ -134,6 +134,9 @@ namespace skaktego {
 
         /// <summary>
         /// Replace all unknown pieces with a random piece
+        /// 
+        /// <para>This method never replaces a piece with a king.
+        /// This is due to a bug in <c>ChessAI</c></para>
         /// </summary>
         /// <param name="rand">The random number generator</param>
         public void DeObfuscate(Random rand) {
@@ -141,7 +144,7 @@ namespace skaktego {
                 for (int j = 0; j < board.Size; j++) {
                     var piece = board.GetPiece(new BoardPosition(i, j));
                     if (piece != null && piece.Type == PieceTypes.Unknown) {
-                        PieceTypes randType = (PieceTypes) rand.Next(Piece.PIECE_TYPE_COUNT - 1);
+                        PieceTypes randType = (PieceTypes) rand.Next(Piece.PIECE_TYPE_COUNT - 2);
                         piece.Promote(randType);
                     }
                 }
