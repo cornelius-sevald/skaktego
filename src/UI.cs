@@ -150,7 +150,9 @@ namespace skaktego {
         public ChessMove GetMove(GameState gameState, ChessColors color) {
             this.gameState = gameState;
             this.playerColor = color;
-            return storedMove.Var;
+            ChessMove move = storedMove.Var;
+            legalMoves.Clear();
+            return move;
         }
 
         private void BeginGaming(GameTypes gameType) {
