@@ -212,18 +212,38 @@ namespace skaktego.UserInterace {
 
             storedMove = new MVar<ChessMove>();
 
-            IPlayer whitePlayer = this;
+            IPlayer whitePlayer;
             IPlayer blackPlayer;
-            // Choose the second player.
-            if (aiPlaying) {
-                // Normal chess uses more computational power
-                if (gameType == GameTypes.Normal) {
-                    blackPlayer = new ChessAI(3);
+            Random rnd = new Random();
+
+            //choose a random colour for the player
+            if (rnd.Next(0, 2) == 1) {
+
+                whitePlayer = this;
+                // Choose the second player.
+                if (aiPlaying) {
+                    // Normal chess uses more computational power
+                    if (gameType == GameTypes.Normal) {
+                        blackPlayer = new ChessAI(3);
+                    } else {
+                        blackPlayer = new ChessAI(4);
+                    }
                 } else {
-                    blackPlayer = new ChessAI(4);
+                    blackPlayer = this;
                 }
             } else {
                 blackPlayer = this;
+                // Choose the second player.
+                if (aiPlaying) {
+                    // Normal chess uses more computational power
+                    if (gameType == GameTypes.Normal) {
+                        whitePlayer = new ChessAI(3);
+                    } else {
+                        whitePlayer = new ChessAI(4);
+                    }
+                } else {
+                    whitePlayer = this;
+                }
             }
 
             game = new Game(whitePlayer, blackPlayer, gameType);
