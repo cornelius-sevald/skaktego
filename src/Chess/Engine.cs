@@ -293,7 +293,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// All possible moves for the piece on the selected position
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos) {
             Piece piece = gameState.board.GetPiece(pos);
             return GetPseudoLegalMoves(gameState, pos, piece);
         }
@@ -314,7 +314,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// All possible moves for the piece on the selected position
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
+        private static List<BoardPosition> GetPseudoLegalMoves(GameState gameState, BoardPosition pos, Piece piece) {
             // There are no pseudo-legal moves, if there is no piece
             // or it is not the piece's colors turn
             if (piece == null || piece.Color != gameState.player) {
@@ -671,7 +671,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given rook
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalRookMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalRookMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             // Checks pseudo-legal moves in the positive vertical direction from the piece's position
@@ -752,7 +752,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given knight
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalKnightMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             //The knight can have a maximum of 8 possible moves, and the only factor is if the move is outside the board or is occupied by the players own piece
@@ -785,7 +785,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given bishop
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalBishopMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalBishopMoves(GameState gameState, BoardPosition pos) {
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
             // Checks pseudo-legal moves in the positive vertical and horizontal direction from the piece's position
@@ -870,7 +870,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given queen
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalQueenMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalQueenMoves(GameState gameState, BoardPosition pos) {
 
             //Using the rook and bishop move checkers as they will cover all the queens movement options
             List<BoardPosition> fakeRook = GetPseudoLegalRookMoves(gameState, pos);
@@ -890,7 +890,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// A list of possible moves for the given king
         /// </returns>
-        public static List<BoardPosition> GetPseudoLegalKingMoves(GameState gameState, BoardPosition pos) {
+        private static List<BoardPosition> GetPseudoLegalKingMoves(GameState gameState, BoardPosition pos) {
 
             Stack<BoardPosition> possibleMoves = new Stack<BoardPosition>();
 
@@ -1043,7 +1043,7 @@ namespace skaktego.Chess {
         /// <returns>
         /// True if the tile is attacked and false if it is not
         /// </returns>
-        public static bool IsTileAttacked(GameState gameState, BoardPosition pos) {
+        private static bool IsTileAttacked(GameState gameState, BoardPosition pos) {
             foreach (PieceTypes type in Enum.GetValues(typeof(PieceTypes))) {
                 var piece = new Piece(gameState.player, type);
                 List<BoardPosition> moves = GetPseudoLegalMoves(gameState, pos, piece);
