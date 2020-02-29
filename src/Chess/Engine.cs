@@ -283,9 +283,7 @@ namespace skaktego.Chess {
         /// <summary>
         /// Find all pseudo-legal moves of the piece located at the given position
         /// </summary>
-        /// <seealso>
-        /// skaktego.Chess.Engine.GetLegalMoves
-        /// </seealso>
+        /// <seealso cref="GetLegalMoves"/>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
@@ -303,9 +301,7 @@ namespace skaktego.Chess {
         /// <summary>
         /// Find all pseudo-legal moves for the given piece at the given position
         /// </summary>
-        /// <seealso>
-        /// skaktego.Chess.Engine.GetLegalMoves
-        /// </seealso>
+        /// <seealso cref="GetLegalMoves"/>
         /// <param name="gameState">
         /// The state of the game
         /// </param>
@@ -1102,7 +1098,7 @@ namespace skaktego.Chess {
         /// To check if the game actually is a tie,
         /// use <c>IsTie AND (NOT IsCheck)</c>
         /// </para>
-        /// <seealso cref="skaktego.Chess.Engine.IsGameOver"/>
+        /// <seealso cref="IsGameOver"/>
         /// <param name="realState">
         /// The state of the game
         /// </param>
@@ -1159,7 +1155,7 @@ namespace skaktego.Chess {
         /// <para>
         /// This function is equivelant to <c>IsTie</c>
         /// </para>
-        /// <seealso cref="skaktego.Chess.Engine.IsTie"/>
+        /// <seealso cref="IsTie"/>
         /// <param name="gameState"></param>
         /// <returns>True if the game is over</returns>
         public static bool IsGameOver(GameState gameState) {

@@ -12,7 +12,7 @@ namespace skaktego.Chess {
     /// <summary>
     /// Extention methods for chess colors
     /// </summary>
-    /// <seealso>skaktego.Game.ChessColors</seealso>
+    /// <seealso cref="ChessColors"/>
     public static class ChessColorsMethods {
 
         /// <summary>
@@ -21,7 +21,7 @@ namespace skaktego.Chess {
         /// <para>
         /// White becomes 'w' and black becomes 'b'
         /// </para>
-        /// <seealso>skaktego.Game.ChessColorsMethods.FromChar</seealso>
+        /// <seealso cref="FromChar"/>
         public static char ToChar(this ChessColors color) {
             switch (color) {
                 case ChessColors.Black:
@@ -34,7 +34,7 @@ namespace skaktego.Chess {
         /// <summary>
         /// Convert a character to a chess color
         /// </summary>
-        /// <seealso>skaktego.Game.ChessColorsMethods.ToChar</seealso>
+        /// <seealso cref="ToChar"/>
         /// <returns></returns>
         public static ChessColors FromChar(char s) {
             switch (s) {

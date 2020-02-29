@@ -23,10 +23,10 @@ namespace skaktego.Chess {
         /// Create a board from a FEN string
         /// 
         /// <para>The notation is a little different from FEN,
-        /// <see>skaktego.Chess.Piece.FromChar</see> for why.</para>
+        /// because of skaktego rules.</para>
         /// </summary>
+        /// <seealso cref="ToString"/>
         /// <param name="s">The board in Forsyth–Edwards Notation</param>
-        /// <returns></returns>
         public static Board FromString(string s) {
             string[] rows = s.Split('/');
             int size = rows.Length;
@@ -129,8 +129,9 @@ namespace skaktego.Chess {
         /// </summary>
         /// <para>
         /// The notation is a little different from FEN,
-        /// <see>skaktego.Chess.Piece.FromString</see> for why.
+        /// because of skaktego rules.
         /// </para>
+        /// <seealso cref="FromString"/>
         public override string ToString() {
             StringBuilder rowStr = new StringBuilder(Size);
 

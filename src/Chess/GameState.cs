@@ -226,7 +226,7 @@ namespace skaktego.Chess {
         /// The string notation is very close to FEN,
         /// but modified to accomidate for skaktego rules.
         /// </para>
-        /// <seealso>skaktego.Chess.GameState.ToString</seealso>
+        /// <seealso cref="ToString"/>
         public static GameState FromString(string stateStr) {
             string[] splitStr = stateStr.Split(' ');
             var boardStr     = splitStr[0];
@@ -288,7 +288,7 @@ namespace skaktego.Chess {
         /// The string notation is very close to FEN,
         /// but modified to accomidate for skaktego rules.
         /// </para>
-        /// <seealso>skaktego.Chess.GameState.FromString</seealso>
+        /// <seealso cref="FromString"/>
         public override string ToString() {
             string boardStr = board.ToString();
             string takenStr = "";

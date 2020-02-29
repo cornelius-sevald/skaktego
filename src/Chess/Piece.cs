@@ -54,9 +54,9 @@ namespace skaktego.Chess {
         /// </summary>
         /// <para>
         /// The pieces follow FEN, except for unkown pieces that are labeled 'U',
-        /// and pawns that have not moved that are labeled 'ℙ' and '℗'.
+        /// and pawns that have not moved that are labeled with special characters.
         /// </para>
-        /// <seealso>skaktego.Chess.Piece.ToChar</seealso>
+        /// <seealso cref="ToChar"/>
         /// <param name="c">The character representing the piece.</param>
         public static Piece FromChar(char c) {
             ChessColors color;
@@ -118,9 +118,9 @@ namespace skaktego.Chess {
         /// </summary>
         /// <para>
         /// The pieces follow FEN, except for unkown pieces that are labeled 'U',
-        /// and pawns that have not moved that are labeled 'ℙ' and '℗'.
+        /// and pawns that have not moved that are labeled with special characters.
         /// </para>
-        /// <seealso>skaktego.Chess.Piece.FromChar</seealso>
+        /// <seealso cref="FromChar"/>
         public char ToChar() {
 
             // Check for pawn special case
@@ -169,7 +169,7 @@ namespace skaktego.Chess {
         /// <summary>
         /// Convert a piece to a string
         /// </summary>
-        /// <seealso>skaktego.Chess.Piece.ToChar</seealso>
+        /// <seealso cref="ToChar"/>
         public override string ToString() {
             return ToChar().ToString();
         }

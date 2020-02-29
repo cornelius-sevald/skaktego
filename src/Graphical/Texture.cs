@@ -9,7 +9,7 @@ namespace skaktego.Graphical {
     /// Wrapper of an SDL texture
     /// 
     /// <para>A texture is much like a surface, but more efficient</para>
-    /// <seealso>skaktego.Graphical.Surface</seealso>
+    /// <seealso cref="Surface"/>
     /// </summary>
     public class Texture : IDisposable {
         
