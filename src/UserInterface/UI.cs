@@ -32,7 +32,6 @@ namespace skaktego.UserInterace {
         private Window window;
         private Renderer renderer;
         private Font font;
-        private Texture background;
         private Texture menuLogo;
         private Texture menuBG;
         private Texture aiCheckmark;
@@ -145,7 +144,6 @@ namespace skaktego.UserInterace {
                 new Button(7/12.0, 14/24.0, 1/6.0, 1/12.0, "Hovedmenu", font, StopGaming)
             };
 
-            background = new Texture(renderer, "background.png");
             menuLogo = new Texture(renderer, "skaktegoLogo.png");
             menuBG = new Texture(renderer, "skaktegoMain.png");
             aiCheckmark = new Texture(renderer, "checkmark.png");
